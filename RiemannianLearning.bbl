@@ -1,0 +1,32 @@
+\begin{thebibliography}{1}
+
+\bibitem{arsigny2007geometric}
+Vincent Arsigny, Pierre Fillard, Xavier Pennec, and Nicholas Ayache.
+\newblock Geometric means in a novel vector space structure on symmetric
+  positive-definite matrices.
+\newblock {\em SIAM journal on matrix analysis and applications},
+  29(1):328--347, 2007.
+
+\bibitem{edelman1998geometry}
+Alan Edelman, Tom{\'a}s~A Arias, and Steven~T Smith.
+\newblock The geometry of algorithms with orthogonality constraints.
+\newblock {\em SIAM journal on Matrix Analysis and Applications},
+  20(2):303--353, 1998.
+
+\bibitem{hager2006survey}
+William~W Hager and Hongchao Zhang.
+\newblock A survey of nonlinear conjugate gradient methods.
+\newblock {\em Pacific journal of Optimization}, 2(1):35--58, 2006.
+
+\bibitem{pennec2006riemannian}
+Xavier Pennec, Pierre Fillard, and Nicholas Ayache.
+\newblock A riemannian framework for tensor computing.
+\newblock {\em International Journal of computer vision}, 66:41--66, 2006.
+
+\bibitem{sra2015conic}
+Suvrit Sra and Reshad Hosseini.
+\newblock Conic geometric optimization on the manifold of positive definite
+  matrices.
+\newblock {\em SIAM Journal on Optimization}, 25(1):713--739, 2015.
+
+\end{thebibliography}

@@ -1,0 +1,1714 @@
+\documentclass[10pt,a4paper]{book}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+\usepackage{geometry}
+\usepackage{tikz-cd}
+\usepackage{graphicx}
+\usepackage{amsthm}
+\usepackage{dsfont}
+\usepackage{color}
+%%%%%%%%%%
+\theoremstyle{definition}
+\newtheorem{defn}{Definition}[section]
+\newtheorem*{cond}{Condition $(\star)$}
+\newtheorem{qn}{question}
+\newtheorem{exm}{Example}[section]
+%%%%%%%%%%%
+\theoremstyle{plain}
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{prop}{Proposition}[section]
+\newtheorem{cor}{Corollary}[section]
+\newtheorem{con}{Conjecture}
+\newtheorem{lma}{Lemma}[section]
+%%%%%%%%%%%
+\theoremstyle{remark}
+\newtheorem{rmk}{Remark}[section]
+
+
+
+
+
+
+\newcommand{\law}{\stackrel{\text{law}}{=}}
+\newcommand{\ud}{\mathrm{d}}
+\newcommand{\II}{\mathrm{I}}
+\newcommand{\LL}{\mathrm{\textbf{L}}}
+\newcommand{\PP}{\mathscr{P}}
+\newcommand{\K}{\mathrm{\textbf{Ker}}}
+\newcommand{\Id}{\mathrm{\textbf{Id}}}
+\newcommand{\III}{\mathrm{II}}
+\newcommand{\grad}{\textrm{grad}}
+\newcommand{\E}{\mathcal{E}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\dist}{\mathrm{dist}}
+\newcommand \Esp {\mathbb{E}}
+\newcommand \Z {\mathbb{Z}}
+\newcommand \M {\mathcal{M}}
+\newcommand \X {\mathcal{X}}
+\newcommand \Hess {\text{Hess}}
+\newcommand \Stif {\textrm{St}}
+\newcommand \SPD {\text{Sym}(n)^{+}}
+
+\def\N{{\rm I\kern-0.16em N}}
+\def\R{{\rm I\kern-0.16em R}}
+%\def\E{{\rm I\kern-0.16em E}}
+\def\P{{\rm I\kern-0.16em P}}
+\def\F{{\rm I\kern-0.16em F}}
+\def\B{{\rm I\kern-0.16em B}}
+\def\C{{\rm I\kern-0.46em C}}
+\def\G{{\rm I\kern-0.50em G}}
+\def\dx{\mathrm{d}x}
+\def\dt{\mathrm{d}t}
+\def\dy{\mathrm{d}y}
+\def\dv{\mathrm{d}v}
+
+\author{-}
+
+
+\title{Federated learning on Riemannian manifolds} % \thanks is optional. Insert line breaks with \\
+
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+
+
+\chapter{Introduction}
+\section*{Motivation}
+Optimization: a search space $S$ and a cost function $f:S\to \R$. The goal is to find 
+$$x^{\ast}\in \arg \min_{x\in S}f(x).$$
+Usually, $S$ is a linear space like $\R^n$, for which the previous optimization problem is called \emph{unconstrained optimization}. For $f$ smooth enough, we have the notions of gradient, and even Hessian that give rise to gradient descent and Newton algorithms to efficiently search a solution. 
+\par \medskip
+When $S$ is a smooth surface, $x$ is not allowed to move freely in $\R^n$: it is \emph{constrained optimization}.  How can we generalize algorithms such as gradient descent or Newton's method in the context of smooth manifolds? How to define the gradient/Hessian?\\ We will take advantage of the fact that smooth manifolds can be linearized locally around every point $x$ thanks to the tangent space at $x$. Endowing this tangent space with its own inner product (varying smoothly with $x$) leads to the construction of Riemannian manifold, on which we can properly define gradients and Hessians. 
+
+\par \medskip
+Let $x_1,\dots, x_n\in \R^d$ a large collection of centered data. We wish to determine the $k$ first principal components of such a cloud of points. Formally, if $X\in \R^{d\times n}$, we look for a matrix $U\in \R^{d\times k}$ with orthonormal columns $u_1,\dots, u_k \in \R$, i.e. matrices $U$ belonging to
+$$\text{St}(d,k):=\{U\in \R^{d\times k}: U^{T}U=\text{I}_k\}.$$
+\par\medskip
+For a smooth function $f:\mathcal{E} \to \R$ (where $\mathcal{E}$ is a Euclidean space), the gradient is defined w.r.t. a inner product: $\grad f(x)$ is the unique element of $\mathcal{E}$ s.t. for all $v\in \mathcal{E}$,
+$$Df(x)[v]=\langle \grad f(x),v\rangle$$
+where $Df(x)[v]=\lim_{t\to 0}\frac{f(x+tv)-f(x)}{t}$. Consequently, the gradient of $f$ \emph{depends} on a choice of an inner product, while the differential does not. \\ To define a proper notion of gradients for $f:S^{d-1}\to \R$, we need to provide a meaningful concept of differential for $f$ at $x$, namely $Df(x):T_xS^{d-1}\to \R$ and introduce a relevant inner product $\langle \cdot,\cdot \rangle_x$ on the tangent space $T_xS^{d-1}$ so that
+$$\forall v\in T_xS^{d-1},~Df(x)[v]=\langle \grad f(x),v\rangle_x.$$
+Here on the sphere $S^{d-1}$ we restric the inner product of $\R^d$ to $T_xS^{d-1}$. For Riemannian submanifolds, we will define the Riemannian gradient as the orthogonal projection of the classical gradient to the tangent spaces.
+\\ Recall that the Euclidean Hessian of $f$ at $x$ is the linear map $\Hess f(x):\mathcal{E}\to \mathcal{E}$ defined by
+$$\Hess f(x)[v]=D(\grad f)(x)[v]=\lim_{t\o 0}\frac{\grad f(x+tv)-\grad f(x)}{t}.$$
+Schwarz theorem implies that $\Hess f(x)$ is symmetric w.r.t. the inner product of $\mathcal{E}$.
+
+\chapter{Riemannian geometry}
+\section{Embedded submanifolds of Euclidean space}
+\subsection{Embedded submanifolds and tangent spaces}
+\begin{defn}[Embedded submanifold]
+Let $\mathcal{E}$ be a linear space of dimension $d$ and let $\mathcal{M}\subseteq \mathcal{E}$ (non empty). We say that $\mathcal{M}$ is a smooth \emph{embedded submanifold} of $\mathcal{E}$ of dimension $n$ if either of the following conditions is satisfied:
+\begin{enumerate}
+\item $n=d$ and $\mathcal{M}$ is open in $\mathcal{E}$.
+\item $n=d-k$ for some $k\ge 1$ and for each $x\in \mathcal{M}$, there exists a neighborhood $U$ of $x$ in $\mathcal{E}$ and a smooth function $h:U \to \R^{k}$ such that
+$$M\cap U=h^{-1}(0)~~\text{ and }~~\text{rank} Dh(x)=k.$$
+\end{enumerate}
+\end{defn}
+\begin{rmk}
+Such function $h$ is often called a local defining function at $x$.
+\end{rmk}
+Recall the following definition of \emph{diffeomorphism}.
+\begin{defn}[Diffeomorphism]
+A diffeomorphism is a bijective map $F:U \to V$ where $U,V$ are open sets such that $F$ and $F^{-1}$ are smooth.
+\end{defn}
+We have the following characterisation of submanifold using local diffeomorphism.
+\begin{thm}\label{thm.embsubman}
+With the same notations, $\mathcal{M}$ is a submanifold of dimension $n=d-k$ if and only if for each $x\in \mathcal{M}$, there exists a neighborhood $U$ of $x$ in $\mathcal{E}$, an open set $V\subset \R^d$ and a diffeomorphism $F:U \to V$ such that
+$$F(\mathcal{M}\cap U)=\{y\in \R^d: y_{n+1}=\dots=y_d=0\}\cap V.$$
+\end{thm}
+The proof of the Theorem \ref{thm.embsubman} relies on the inverse function theorem.
+\begin{defn}[Tangent space]
+Let $\mathcal{M}\subseteq \mathcal{E}$. For all $x\in \mathcal{M}$, define
+$$T_x\mathcal{M}:=\{c'(0) \mid c: I \to\mathcal{M} \text{ smooth and }c(0)=x\}$$
+where $I$ is an open interval containing $t=0$.
+The set $T_x\mathcal{M}$ the \emph{tangent space} to $\mathcal{M}$ at $x$ and vectors of $T_x\mathcal{M}$ are called \emph{tangent vectors} at $x$.
+\end{defn}
+
+\begin{rmk}
+A vector $v$ is in the tangent space of $x$ if and only if there exists a smooth curve on $\mathcal{M}$ going through $x$ with speed $v$.
+\end{rmk}
+We have the following characterization of the tangent space on $x$ via the differential of the local defining function. In particular, $T_x\M$ is a linear space.
+\begin{thm}
+Let $\mathcal{M}$ an embedded submanifold of $\mathcal{E}$. Let $x\in \mathcal{M}$. If $\mathcal{M}$ is an open submanifold, then $T_x\mathcal{M}=\mathcal{E}$. Otherwise,
+$$T_x\mathcal{M}=\ker Dh(x)$$
+with $h$ any local defining function at $x$.
+\end{thm}
+\begin{rmk} The dimension of $T_x\mathcal{M}$ (independent of $x$) coincides with $\dim \mathcal{M}$.
+\end{rmk}
+\begin{exm}~
+\begin{itemize}
+\item $S^{d-1}=\{x\in \R^d\mid x^{T}x=1\}= h^{-1}(\{0\})~\text{ where }h:\R^d\to \R, x\mapsto x^{T}x-1.$
+Since $Dh(x)[v]=2x^{T}x$, we have $\text{rank} Dh(x)=1$ hence $S^{d-1}$ is an embedded submanifold of $\R^d$ of dimension $n=d-1$ and whose tangent spaces are given by
+$$T_xS^{d-1}=\ker Dh(x)=\{x\in \R^{d}\mid x^{T}v=0\}.$$
+\item $\text{Sym}_n^{++}:=\{X\in \mathcal{M}_n(\R) \mid X \succ 0\}$ is an open set of $\text{Sym}(n)$ hence for all $\Sigma \in \text{Sym}_{n}^{++}$,
+$$T_{\Sigma}\text{Sym}_n^{++}\simeq \text{Sym}(n).$$
+\item Let $O \in \mathcal{O}_n(\R):=\{O \in \mathcal{M}_n(\R) \mid OO^{T}=\text{I}_n\}$. Let $f:O\mapsto O^TO -\text{I}_n$ is a smooth map defining $\mathcal{O}_n(\R)$. We have
+$Df(O)[v]=O^Tv+v^{T}O$ hence
+$$T_O\mathcal{O}_n(\R) =\left\{v\in \R^{p\times p} \mid O^Tv+v^TO=0_{n}\right\}=\left\{O\Omega \mid \Omega \in \R^{p\times p}, \Omega^{T}=-\Omega\right\}.$$
+\end{itemize}
+\end{exm}
+We equip embedded manifolds of $\mathcal{E}$ with the topology induced by $\mathcal{E}$. 
+
+Cartesian products of manifolds are indeed manifolds and the tangent spaces are fully known.
+\begin{prop}
+Let $\M_1$ and $\M_2$ be two embedded submanifolds of two Euclidean spaces $\E_1$ and $\E_2$ respectively. Then $\M_1\times \M_2$ is an embedded submanifold of $\E_1\times \E_2$ of dimension $\dim \M_1+\dim\M_2$ with tangent spaces
+$$T_{(x_1,x_2)}(\M_1\times \M_2)=T_{x_1}\M_1\times T_{x_2}\M_2.$$
+\end{prop}
+
+\begin{exm}
+$$\text{OB}(d,k):=S^{d-1}\times \dots \times S^{d-1}=(S^{d-1})^k$$ is an embedded submanifold of $\R^d$ called the \emph{oblique manifold}. 
+\end{exm}
+
+\subsection{Smooth maps on embedded submanifolds}
+In optimization, two important examples of maps between manifolds are cost functions $L:\mathcal{M}\to \R$ and iteration maps $\mathcal{M}\to \mathcal{M}$.
+\begin{defn}[Smooth maps]
+Let $\M$ and $\M^{\prime}$ be two embedded submanifolds of $\mathcal{E}$ and $\mathcal{E}^{\prime}$ respectively. A map $F:\M\to\M^{\prime}$ is \emph{smooth} at $x\in \M$ is there exists a function $\bar{F}:U \to \mathcal{E}^{\prime}$ smooth on an open neighborhood $U$ of $x$ in $\mathcal{E}$ and such that
+$$F\equiv \bar{F}\text{ on } \M \cap U.$$
+We call $\bar{F}$ a \emph{smooth} extension of $F$ around $x$.\\
+The map $F$ is \emph{smooth} if it is smooth at all $x\in \M$.
+\end{defn}
+\begin{rmk}
+It means that if $\bar{F}$ is a smooth map on $\mathcal{E}$, the restriction $F=\bar{F}_{\mid \M}$ is smooth on $\M$.
+\end{rmk}
+The following proposition makes it possible to consider the reverse, i.e. smooth extensions: a smooth map on $\M$ always admits a smooth extension to a neighborhood of $\M$. 
+\begin{prop}
+With the above notations, $F:\M \to \M'$ is smooth if and only if $F=\bar{F}_{\mid \M}$ where $\bar{F}$ is some smooth map from a neighborhood of $\M$ in $\mathcal{E}$ to $\mathcal{E}'$.
+\end{prop}
+\begin{defn}[Scalar field]
+A \emph{scalar field} on a manifold $\M$ is a function $f:\M \to \R$. If $f$ is smooth, we call it a \emph{smooth scalar field}. Let us denote by $\mathcal{F}(\M)$ the set of smooth scalar fields on $\M$.
+\end{defn}
+\subsection{Differential of a smooth map}
+Recall that if $\bar{F}: U\subset \mathcal{E} \to \mathcal{E}^{\prime}$ is smooth between two \emph{vector spaces}, the differential of $\bar{F}$ at $x\in U$ is the linear map $D\bar{F}(x):\mathcal{E}\to\mathcal{E}'$ defined by
+$$D\bar{F}(x)[v]=\lim_{t\to 0}\frac{\bar{F}(x+tv)-\bar{F}(x)}{t}.$$
+Let us try to generalize it to a smooth function $F:\M \to \M'$. Generally, $x+tv$ does not belong to $\M$. However, $c:t\mapsto x+tv$ is a curve in $\mathcal{E}$ which goes through $x$ at velocity $v$. Let us use curves on $\M$ instead.
+\par \medskip
+We know that for any tangent vector $v\in T_x\M$, there exists a smooth curve $c:\R \to \M$ such that $c(0)=x$ and $c'(0)=v$. We can then define the smooth curve on $\M'$ by considering $t\mapsto F(c(t))$, passing through $F(x)$ at velocity $\frac{d}{dt}F(c(t))_{\mid t=0}$ being the tangent vector of $\M'$ at $F(x)$. 
+\begin{defn}[Differential]
+The differential of $F:\M \to \M'$ at the point $x\in \M$ is the linear map $DF(x):T_x\M \to T_{F(x)}\M'$ defined by
+$$DF(x)[v]=\frac{d}{dt}F(c(t))_{\mid t=0}=(F\circ c)^{\prime}(0)$$
+where $c$ is a smooth curve on $\M$ passing through $x$ at $t=0$ with velocity $v$.
+\end{defn}
+\begin{rmk}Let us notice that
+\begin{enumerate}
+\item[(i)] this definition is independent on the choice of the curve $c$,
+\item[(ii)] $DF(x)$ is linear,
+\item[(iii)] with the same notations as above, $DF(x)=D\bar{F}(x)_{\mid T_x\M}$ and it does not depend on the choice of smooth extension $\bar{F}$.
+\end{enumerate}
+\end{rmk}
+\begin{exm}
+Let $A\in \text{Sym}(d)$. Set $f:S^{d-1}\to \R, x \mapsto x^{T}Ax$. It can be smoothly extended to $\R^d$ by $\bar{f}(x)=x^{T}Ax$ hence $f$ is smooth. Let us compute its differential. For $v\in \R^d$, we have
+$$D\bar{f}(x)[v]=2x^{T}Av$$
+hence $Df(x)[v]=2x^{T}Av$ for all $v\in T_xS^{d-1}=\{v\in \R^d \mid x^{T}v=0\}$.
+\end{exm}
+
+\subsection{Vector fields and tangent bundle}
+Before defining vector fields, we need the notion of \emph{tangent bundle}.
+\begin{defn}[Tangent bundle]
+The tangent bundle of a manifold $\M$ is the disjoint union of the tangent spaces of $\M$, i.e.
+$$T\M :=\{(x,v)\mid x \in \M \text{ and } v\in T_x\M\}.$$
+\end{defn}
+The tangent bundle of a manifold possesses the nice property of being also a manifold.
+\begin{thm}
+If $\M$ is an embedded submanifold of $\E$, the tangent bundle $T\M$ is an embedded submanifold of $\E \times \E$ of dimension $2\dim \M$.
+\end{thm}
+Now we are in a position to define vector fields.
+\begin{defn}[Vector field]
+A \emph{vector field} on a manifold $\M$ is a map $V:\M\to T\M$ such that
+$$\forall x \in \M,~V(x)\in T_x\M.$$
+If $V$ is a smooth map (between manifolds), $V$ is said to be a \emph{smooth vector field}. 
+\end{defn}
+Let us denote by $\mathcal{X}(\M)$ the set of smooth vector fields on $\M$.
+\begin{prop}
+Let $\M$ be an embedded submanifold of $\mathcal{E}$ and $V$ a vector field on $\M$. The following assertions are equivalent:
+\begin{itemize}
+\item there exists a smooth vector field $\bar{V}$ on a neighborhood of $\M$ such that $V=\bar{V}_{\mid \M}$
+\item $V$ is smooth on $\M$
+\end{itemize}
+\end{prop}
+This means a vector field (on an embedded submanifold) is smooth if and only if it is the restriction of a smooth vector field on a neighborhood of the manifold in the embedding space.
+\begin{exm}
+Let $\M_1\times \M_2$ be a product manifold. The tangent bundle of $\M_1\times \M_2$ is given by
+$$T(\M_1\times \M_2)=T\M_1\times T\M_2.$$
+\end{exm}
+
+
+\subsection{Retractions}
+Let $x\in \M$ and $v\in T_x\M$. How to move from $x$ along the direction $v$ while staying on $\M$? There are many smooth curves $c$ such that $c(0)=x$ and $c^{\prime}(0)=v$. Retraction is a concept were we pick a particular smooth  curve for each couple $(x,v)\in T\M$.
+
+\begin{defn}[Retraction]
+A smooth map $R:T\M \to \M: (x,v)\mapsto R_x(v)$ is called a \emph{retraction} if any curve $c:t\mapsto R_x(tv)$ verifies 
+$$c(0)=x~~\text{ and}~~c^{\prime}(0)=v.$$
+\end{defn}
+\begin{rmk}~
+\begin{itemize}
+\item For an embedded manifold $\M\subset \mathcal{E}$, the smoothness of $R$ is equivalent to the existence of a smooth map $\bar{R}:\E\times \E \to \E$ from a neighborhood of $T\M$ such that $R=\bar{R}_{\mid T\M}$.
+\item It can be easily shown that $R$ is a retraction if and only if for all $(x,v)\in T\M$, we have $R_x(0)=x$ and $DR_x(0):T_x\M\to T_x\M$ is the identity map.
+\end{itemize}
+\end{rmk}
+\begin{exm}
+If $x\in S^{d-1}$ and $v\in T_xS^{d-1}$, i.e. $x^{T}v=0$, then 
+$$R_x(v)=\frac{x+v}{\|x+v\|}=\frac{x+v}{\sqrt{1+\|v\|^2}}$$
+defines a retraction. Indeed, consider the curve $c:\R \to S^{d-1}$ define dby
+$$c(t)=R_x(tv)=\frac{x+tv}{\sqrt{1+t^2\|v\|^2}}.$$
+It is clear that $c(0)=x$ and using chain rule, $c'(0)=v$. The smoothness of $R$ is ensured by the smoothness of its extension to $\R^d \times \R^d$.
+\end{exm}
+\begin{rmk}
+One can also check that $\tilde{R}_x(v):=\cos(\|v\|)x+\frac{\sin(\|v\|)}{\|v\|}v$ is also a retraction on the sphere $S^{d-1}$ that traces the great circle going through $x$ at velocity $v$. \\ We will see later that those retractions $R$ and $\tilde{R}$ are geodesics (for the right Riemannian metric) and that $R$ is in fact the \emph{exponential map}. 
+\end{rmk}
+\begin{exm}
+Let $\M_1,\M_2$ be two embedded submanifolds endowed with retractions $R^{(1)}$ and $R^{(2)}$. Then, $R:T(\M_1\times \M_2) \to \M_1 \times \M_2$ defined by
+$$R_{(x_1,x_2)}(v_1,v_2):=(R^{(1)}_{x_1}(v_1),R^{(2)}_{x_2}(v_2))$$ is a licit choice of a retraction for the product manifold.
+\end{exm}
+\section{Riemannian manifolds}
+\subsection{Riemannian metric}
+The idea behind Riemannian manifolds is to equip every tangent space with an inner product varying smoothly with each point.\\ We define an \emph{inner product} on $T_x\M$ (bilinear, symmetric, positive definite function) $$\langle \cdot,\cdot \rangle_x: T_x\M \times T_x\M \to \R.$$ It classically induces a norm $\|v\|_x:=\sqrt{\langle v,v\rangle_x}$ for $v\in T_x\M$.
+\\ We refer to \emph{metric} by the choice of inner product $\langle \cdot, \cdot \rangle_x$ for every $x\in \M$.
+\begin{defn}[Riemannian metric, Riemannian manifold]~
+\begin{enumerate}
+\item 
+A metric $\langle \cdot, \cdot \rangle_x$ on $\M$ is called a \emph{Riemannian metric} if for all smooth vector fields $V,W$ on $\M$, the function
+$$x\mapsto \langle V(x),W(x)\rangle$$
+is smooth from $\M$ to $\R$.
+\item $\M$ is a \emph{Riemannian manifold} if it is equipped with a Riemannian metric.
+\end{enumerate}
+\end{defn}
+\begin{rmk}
+When $\M$ is an embedded submanifold of a Euclidean space $\E$ with an inner product $\langle \cdot, \cdot \rangle$, one way of defining a Riemannian metric on each tangent space to to restrict the natural inner product of $\E$ to them. It is called the \emph{induced metric}.
+\end{rmk}
+The previous remark is formalized with the following proposition and results from considerating smooth extensions of vector fields.
+\begin{prop}
+Let $\M \subset \E$ with $(\E,\langle\cdot,\cdot \rangle)$ a Euclidean space. The metric defined on $\M$ at each $x$ by the restriction
+$$\forall u,v \in T_x\M, \langle u,v\rangle_x=\langle u,v\rangle$$
+is a Riemannian metric.
+\end{prop}
+
+\begin{defn}[Riemannian submanifold]
+Let $\M \subset \E$ an embedded submanifold of a Euclidean space. We call $\M$ a \emph{Riemannian submanifold of $\E$} when it is equipped with the Riemannian metric obtained by restricting the metric of $\E$ on the tangent spaces.
+\end{defn}
+\begin{exm}
+$S^{d-1}$ is a Riemannian submanifold of $\R^d$ when equipped with $\langle u,v\rangle_x =\langle u,v\rangle=u^{T}v$.
+\end{exm}
+\begin{exm}
+Let $(\M_1, \langle \cdot,\cdot\rangle^{\M_1})$ and $(\M_2,\langle \cdot,\cdot \rangle^{\M_2})$ be two Riemannian manifolds. The product $\M_1\times \M_2$ is a Riemannian manifold whose product metric is defined as
+$$\forall (u_1,u_2),(v_1,v_2)\in T_{(x_1,x_2)}(\M_1\times \M_2),~~\langle (u_1,u_2),(v_1,v_2)\rangle_{(x_1,x_2)}=\langle u_1,v_1\rangle_x^{\M_1}+\langle u_2,v_2\rangle_{x_2}^{\M_2}$$
+and defines a Riemannian metric.
+\end{exm}
+\subsection{Riemannian gradients}
+Let us consider a smooth function $f:\M \to \R$. How can we define its gradient?
+
+\begin{defn}[Riemannian gradient]
+Let $f:\M \to \R$ a smooth map. The \emph{Riemannian gradient} of $f$ is the unique vector field $\grad f$ on $\M$ defined by
+$$\forall (x,v)\in T\M,~Df(x)[v]=\langle v,\grad f(x)\rangle_x.$$
+\end{defn}
+Let us detail the case where $\M$ is a Riemannian submanifold of a Euclidean space $\E$. The smoothness of $f$ implies the existence of a smooth extension $\bar{f}$ defined on the neighborhood of $\M$ in $\E$, with Euclidean gradient $\grad \bar{f}$ and
+$$\forall (x,v)\in T\M,~\langle v,\grad f(x)\rangle_x=\langle v,\grad \bar{f}(x)\rangle.$$
+Since $T_x\M$ is a subspace of $\E$ and $\grad \bar{f}\in \E$, we have the unique orthogonal decomposition:
+$$\grad \bar{f}(x)=\underbrace{\grad \bar{f}(x)_{\|}}_{\in T_x\M}+\underbrace{\grad \bar{f}(x)_{\bot}}_{\in T_x\M^{\bot}}$$
+Hence 
+$$\forall (x,v)\in T\M,~\langle v,\grad f(x)\rangle_x=\langle v,\grad \bar{f}(x)_{\|}\rangle_x.$$
+Uniqueness ensures that $\grad f(x)=\grad \bar{f}(x)_{\|}$, i.e. the orthogonal projection on the tangent space of $x$ of the gradient of the extension.
+\par \medskip
+Recall that the orthogonal projector to $T_x\M$ is the linear map $\text{Proj}_x:\E \to \E$ such that:
+\begin{enumerate}
+\item $\text{Im}(\text{Proj}_x)=T_x\M$
+\item $\text{Proj}_x\circ\text{Proj}_x=\text{Proj}_x$
+\item for all $v\in T_x\M$ and $u\in \E,~\langle u-\text{Proj}_x(u),v\rangle =0$
+\end{enumerate}
+Recall that orthogonal projectors are self-adjoint:
+$$\forall u,v\in \E,~\langle u,\text{Proj}_x(v)\rangle=\langle \text{Proj}_x(u),v\rangle.$$
+\begin{prop}
+Let $f:\M\to \R$ be a smooth function on a Riemannian submanifold of $(\E,\langle\cdot,\cdot\rangle)$. The Riemannian gradient of $f$ is given by
+$$\grad f(x)=\text{Proj}_x(\grad \bar{f}(x)),$$
+where $\bar{f}$ is any smooth extension of $f$ to a neighborhood of $\M$ in $\E$. 
+\end{prop}
+
+\begin{exm}
+Let $f:S^{d-1}\to \R, x\mapsto x^{T}Ax$ with $A=A^{T} \in \R^{d\times d}$. We have  $$D\bar{f}(x)[v]=2x^{T}Ax,~\text{ therefore }~\grad \bar{f}(x)=2Ax.$$ Let us compute the Riemannian gradient of $f$. Since $S^{d-1}$ can be seen as a Riemannian submanifold of $\R^d$ with the induced Riemannian metric, we need to determine the orthogonal projector on the tangent space.\\ Since
+$$T_xS^{d-1}=\{v\in \R^d \mid x^{T}v=0\}= \text{Vect}(x)^{\bot}$$
+we have
+$$\text{Proj}_x(u)=u-(x^{T}u)x=(\text{I}_x-xx^{T})u.$$
+Hence
+$$\grad f(x)=2(Ax-(x^{T}Ax)x).$$
+Notice that the gradient vanishes at unit-norm eigenvectors of $A$.
+\end{exm}
+\begin{exm}\textbf{Embedded submanifold that is not a Riemannian submanifold}
+Let $\E=\R^d$ endowed with its Euclidean inner product $\langle u,v \rangle_{\E}=u^Tv$. \\ Let $G:U\to \R^{d\times d}$ be a smooth map such that $G(x)\in \text{Sym}(d)^{++}$ for all $x\in U$, where $U$ is an open subset of $\E$. On $\M=U$, we define the metric
+$$\langle u,v\rangle_{\M}=u^TG(x)v.$$
+It defines a Riemannian metric on $U$. \\ Let $f:U\to \R$. Let us compute the Riemannian gradient of $f$ w.r.t. $\langle \cdot, \cdot \rangle_{\M}$. For $v\in \R^n$, we have
+$$\langle v,G(x)\grad_{\M}f(x)\rangle_{\E}=v^{T}G(x) \grad_{\M}f(x)=\langle v,\grad_{\M}f(x)\rangle_{\M}=\langle v,\grad_{\E}f(x)\rangle_{\E}.$$
+Unicity yields
+$$\grad_{\M}f(x)=G(x)^{-1}\grad_{\E}f(x).$$
+\end{exm}
+In the case of smooth functions on Riemannian product manifolds, the gradient is explicit.
+\begin{prop}
+Let $f:\M_1\times \M_2\to \R$ a smooth function defined on a Riemannian product manifold. Then
+$$\grad f(x,y)=\left(\grad(x\mapsto f(x,y))(x),\grad(y\mapsto f(x,y))(y)\right).$$
+\end{prop}
+
+\subsection{Riemannian connection}
+Let us first define the notion of connection, which generalizes the notion of differential for vectors fields.
+\begin{defn}[Connection]
+A \emph{connection} on $\M$ is an operator
+$$\nabla: T\M \times \X(\M) \to T\M$$
+$$\nabla (u,V) \mapsto \nabla_uV$$
+such that 
+$$u \in T_x\M \Rightarrow \nabla_uV \in T_x \M$$ and for all $U,V,W\in \X(\M),~u,w\in T_x\M$ and $a,b\in \R$:
+\begin{enumerate}
+\item \textit{Smoothness:} $(\nabla_uV)(x):=\nabla_{U(x)}V$ defines a smooth vector field $\nabla_U V$
+\item \textit{Linearity in $u$:} 
+$$\nabla_{au+bw}V=a\nabla_uV+b\nabla_wV$$
+\item \textit{Linearity in $V$:}
+$$\nabla_u(aV+bW)=a\nabla_uV+b\nabla_u W$$
+\item \textit{Leibniz rule:} 
+$$\nabla_u(fV)=Df(x)[u]\cdot V(x)+f(x)\nabla_uV$$
+\end{enumerate}
+\end{defn}
+\begin{rmk}~
+\begin{itemize}
+\item $\nabla_u V$ is a shortcut notation for $\nabla_{(x,u)}V$.
+\item No Riemannian metric is needed.
+\item There exists infinitely many connections on any manifold. Requiring additional assumptions w.r.t. the Riemannian structure narrows down to one connection, the \emph{Levi--Civita connection}.
+\end{itemize}
+\end{rmk}
+\begin{exm}~
+\begin{enumerate}
+\item On a linear space $\E$, the following define a connection:
+$$\nabla_u V=DV(x)[u].$$
+\item For $\M$ an embedded subanifold in a Euclidean space $\E$, if $\text{Proj}_x$ defines the orthogonal projector from $\E$ to $T_x\M$ and $\bar{V}$ is a smooth extension of $V$, 
+$$\nabla_u V=\text{Proj}_x(D\bar{V}(x)[u])$$
+defines a valid connection.
+\end{enumerate}
+\end{exm}
+All connections coincide at critical points of a vector field.
+\begin{prop}
+Let $\M$ be a manifold with arbitrary connection $\nabla$ and $V$ a smooth vector field $V\in \X(\M)$. Let $x\in \M$ such that $V(x)=0$. Then
+$$\forall u\in T_x\M,~\nabla_u V=DV(x)[u].$$
+\end{prop}
+Before moving on to adding two additional properties that guarantee symmetry of the Hessian, let us introduce some notations.
+\begin{defn}
+For $U,V\in \X(\M)$ and $f:\mathcal{U}\subset \M \to \R$. We set:
+$$(Uf) \in \F(\mathcal{U}) \text{ such that } (Uf)(x)=Df(x)[U(x)];$$
+$$[U,V]: \F(\mathcal{U})\to \F(\mathcal{U}) \text{ such that } [U,V]f=U(Vf)-V(Uf):$$
+$$\langle U,V\rangle \in \F(\M) \text{ such that }\langle U,V \rangle (x)=\langle U(x),V(x)\rangle_x.$$
+\end{defn}
+\begin{rmk}
+The commutator $[U,V]$ is called the \emph{Lie bracket}.\\ Remark that
+$$Uf=\langle \grad f,U\rangle.$$
+The notation $Uf$ (which should not be confused with $fU:x\mapsto f(x)U(x)$ ) captures the action of the vector field $U$ on $f$ though derivation. 
+\end{rmk}
+Let us now state the main result of this section.
+\begin{thm}
+Let $\M$ be a Riemannian manifold. There exists a unique connection $\nabla$ verifying that for all $U,V,W\in \X(\M)$:
+\begin{enumerate}
+\item \textit{Symmetry:} for all $f\in \F(\M)$,
+$$[U,V]f=(\nabla_UV-\nabla_V U)f$$
+\item \textit{Compatibility with the metric:}
+$$U\langle V,W\rangle = \langle \nabla_U V,W\rangle + \langle V,\nabla_U W\rangle.$$
+\end{enumerate}
+It is called the \emph{Levi--Civita} or \emph{Riemannian} connection. $\nabla$ is characterized by the \emph{Koszul formula}:
+$$2\langle \nabla_U V,W\rangle=U \langle V,W\rangle + V\langle W,U\rangle - W\langle U,V\rangle - \langle U,[V,W]\rangle + \langle V ,[W,U] \rangle+\langle W, [U,V]\rangle.$$
+\end{thm}
+\begin{rmk}
+For $\M=\E$ being a Euclidean space, we have $W\langle V,U\rangle=\langle WU,V\rangle +\langle V,WU\rangle$ so the Koszul formula comes down to
+$$\langle UV,W\rangle = \langle \nabla_U V, W\rangle.$$
+\end{rmk}
+\begin{exm}~ 
+\begin{itemize}
+\item The Riemannian connection on a Euclidean space $\E$ with any metric $\langle \cdot, \cdot \rangle$ is
+$$\nabla_uV=DV(x)[u]$$
+\item Let $\M$ be an embedded submanifold of a Euclidean space $\E$. The connection $\nabla$ defined by $$\nabla_u V=\text{Proj}_x(D\bar{V}(x)[u])$$ is the Riemannian connection on $\M$.
+
+\end{itemize}
+
+\end{exm}
+
+
+
+
+\subsection{Riemannian Hessian}
+\begin{defn}
+Let $\M$ be a Riemannian manifold with its Riemannian connection $\nabla$. The Riemannian Hessian of $f\in \F(\M)$ at $x\in \M$ is the linear map
+$$\Hess f(x):T_x\M \to T_x\M$$ such that
+$$\Hess f(x)[u]=\nabla_u \grad f.$$
+\end{defn}
+The very properties of the Riemannian connection ensure the self-adjointness of the Riemannian Hessian.
+\begin{prop}
+The Riemannian Hessian is self-adjoint w.r.t. the Riemannian metric:
+$$\forall x\in \M, \forall u,v\in T_x\M,~~\langle \Hess f(x)[u],v\rangle_x=\langle u,\Hess f(x)[v]\rangle_x.$$
+\end{prop}
+\begin{rmk}
+Since $\Hess f(x)$ is symmetric, the spectral theorem ensures that all of its eigenvalues are real and its corresponding eigenvectors can be chosen to form an orthonormal basis of $T_x\M$ w.r.t. $\langle \cdot,\cdot\rangle_x$. 
+\end{rmk}
+Let us see now how to compute Riemannian Hessians in the case where $\M$ is a Riemannian submanifold of a Euclidean space. 
+\begin{prop}
+Let $f:\M \to \R$ and $\bar{G}$ a smooth extension of $\grad f$. Then
+$$\Hess f(x)[u]=\text{Proj}_x(D\bar{G}(x)[u]).$$
+\end{prop}
+\begin{exm}
+Let $\bar{f}(x)=\frac{1}{2}x^{T}Ax$ for $A \in \text{Sym}_d(\R)$ and $f=\bar{f}_{\mid S^{d-1}}$ on the sphere $S^{d-1}$. We know that
+$$\grad f(x)=Ax-(x^{T}Ax)x.$$
+To get the Riemannian Hessian of $f$, we first differentiate a smooth extension of $\grad f$ in $\R^d$, then project it to the tangent spaces of $S^{d-1}$.\\ Set
+$$\bar{G}(x)=Ax-(x^{T}Ax)x.$$
+We have
+$$D\bar{G}(x)[u]=Au-(u^{T}Ax+x^{T}Au)x-(x^{T}Ax)u.$$
+Hence
+\begin{eqnarray*}
+\Hess f(x)[u]&=&\text{Proj}_x(D\bar{G}(x)[u])\\
+&=&\text{Proj}_x(Au)-(x^{T}Ax)u\\
+&=&Au-(x^TAu)x-(x^{T}Ax)u.
+\end{eqnarray*}
+\end{exm}
+\subsection{Covariant derivative}
+We are interested in differentiating vector fields on curves. \\
+In order to obtain the second-order Taylor expansion of $g=f\circ c$, where $f:\M \to \R$ and $c: I \to \M$ ($I$ being an open interval), we have to differentiate $g^{\prime}$, whose expression was
+$$g^{\prime}(t)=\langle \grad f(c(t)),c^{\prime}(t)\rangle_{c(t)}.$$
+Since $(\grad f) \circ c$ and $c'$ are \textbf{not} vectors fields on $\M$, we cannot use the Riemannian connection directly, but instead an induced notion of differentiation of vector fields along a curve.
+\begin{defn}[Smooth vector field on a curve]
+Let $c: I \to \M$ be a smooth curve on $\M$. Let $Z:I\to T\M$. If for all $t\in I,~Z(t) \in T_{c(t)}\M$, we say that $Z$ is a \emph{vector field on the curve }$c$. It is a smooth vector field on $c$ if it is smooth as a map $I\to T\M$. Let us denote by $\X(c)$ the set of smooth vector fields on $c$.
+\end{defn}
+The following result states the existence of a new derivative operator on the set of smooth vector fields on a curve $c$.\\ Let $c:I\to \M$ be a smooth curve on a manifold endowed with a connection $\nabla$.
+\begin{thm}[Covariant derivative]
+With the above notations, there exists a unique operator called the \emph{covariant derivative (induced by $\nabla$)} $\frac{D}{dt}:\X(c)\to \X(c)$ such that for all $Y,Z \in \X(c),~U\in \X(\M),~g\in \F(I),~a,b\in \R$:
+\begin{enumerate}
+\item \textbf{$\R$-linearity:} 
+$$\frac{D}{dt}(aY+bZ)=a\frac{D}{dt}Y+b\frac{D}{dt}Z$$
+\item \textbf{Leibniz rule:}
+$$\frac{D}{dt}(gZ)=g^{\prime}Z+g\frac{D}{dt}Z$$
+\item \textbf{Chain rule:} for all $t\in I$,
+$$\left(\frac{D}{dt}(U\circ c)\right)(t)=\nabla_{c^{\prime}(t)}U$$
+\item If $\M$ is a Riemannian manifold and $\nabla$ is the Riemannian connection, the following \textbf{product rule} holds:
+$$\frac{d}{dt}\langle Y,Z\rangle=\langle \frac{D}{dt}Y,Z\rangle+\langle Y,\frac{D}{dt}Z\rangle.$$
+\end{enumerate}
+\end{thm}
+\begin{rmk}~
+\begin{itemize}
+\item Here $\langle Y,Z\rangle \in \F(I)$ is defined as
+$$\langle Y,Z\rangle (t)=\langle Y(t),Z(t)\rangle_{c(t)}.$$
+\item $\frac{D}{dt}$ needs to be introduced since there exists some vector fields $Z\in \X(c)$ that cannot be written as $U\circ c$ with $U\in \X(\M)$.
+\end{itemize}
+\end{rmk}
+
+\begin{exm}
+For $f: \M \to \R$ smooth function on a Riemannian manifold with Riemannian concection $\nabla$, we have
+$$\text{Hess} f(x)[u]=\nabla_u\grad f=\frac{D}{dt}\grad f(c(t))_{\mid t=0}$$
+where $c:I\to \M$ is any smooth curve such that $c(0)=x$ and $c'(0)=u$.
+\end{exm}
+In the case of an embedded submanifold of a Euclidean space $\E$, the covariant derivative is explicit.
+\begin{prop}
+Let $\M$ be an embedded submanifold of a Euclidean space $\E$ with connection 
+$$\nabla_uV=\text{Proj}_x(D\bar{V}(x)[u]).$$
+The operator $\frac{D}{dt}$ defined as
+$$\frac{D}{dt}Z(t)=\text{Proj}_{c(t)}\left(\frac{d}{dt}Z(t)\right)$$
+is the covariant derivative.\\ If $\M$ us a Riemannian submanifold of $\E,~\frac{D}{dt}$ also verifies the product rule.
+\end{prop}
+\begin{exm}
+Let $f:\M\to \R$ where $\M$ is a Riemannian submanifold of a Euclidean space $\E$. We have
+\begin{eqnarray*}
+\text{Hess} f(x)[u]&=&\text{Proj}_x\left(\lim_{t\to 0}\frac{\grad f(c(t))-\grad f(c(0))}{t}\right)\\&=&\lim_{t\to 0}\frac{\text{Proj}_x(\grad f(c(t)))-\grad f(x)}{t}
+\end{eqnarray*}
+which leads to a finite difference approximation of the Hessian.
+\end{exm}
+\subsection{Geodesics}
+Having endowed $\M$ with the covariant derivative $\frac{D}{dt}$, we can define \emph{acceleration} along a curve.
+\begin{defn}[Acceleration]
+Let $c:I\to \M$ be a smooth curve. The vector field $c^{\prime}\in \X(c)$ is called \emph{velocity}. The smooth vector field $c^{\prime \prime} \in \X(c)$ defined by
+$$c^{\prime \prime}:=\frac{D}{dt}c^{\prime}$$
+is called the (intrinsic) \emph{acceleration} of $c$.
+\end{defn}
+\begin{rmk}
+If $\M$ is embedded in a linear space $\E$, we write
+$$\ddot{c}=\frac{d^2}{dt^2}c$$
+the classical (extrinsic) acceleration.\\ When $\M$ is a Riemannian submanifold of $\E$, we have
+$$c^{\prime \prime}(t)=\text{Proj}_{c(t)}(\ddot{c}(t)).$$
+\end{rmk}
+\begin{exm}
+On the sphere $S^{d-1}$, for $x\in S^{d-1}$ and $v\in T_xS^{d-1}\setminus \{0\}$, let us set
+$$c(t):=\cos (t\|v\|)x+\frac{\sin(t\|v\|)}{\|v\|}v.$$
+It can be shown that
+$$\ddot{c}(t)=-\|v\|^2c(t)$$
+which, by projecting yields
+$$c^{\prime \prime}(t)=\text{Proj}_{c(t)}\ddot{c}(t)=(\text{I}_d-c(t)c(t)^{T})\ddot{c}(t)=0.$$
+\end{exm}
+Curves with acceleration equals to zero lead to the notion of \emph{geodesic}, being the generalization of straight lines on manifolds.
+\begin{defn}[Geodesic]
+Let $\M$ be a Riemannian manifold. A \emph{geodesic} is a smooth curve $c:I\to \M$ such that for all $t\in I$,
+$$c^{\prime \prime}(t)=0.$$
+\end{defn}
+\begin{rmk}
+On a Riemannian submanifold, a geodesic is a curve such that its (extrinsic) acceleration $\ddot{c}$ is normal to $\M$ at every point.
+\end{rmk}
+\begin{exm}\textbf{Geodesics on $SO(n)$} Let $c:\R \to SO(n), ~t \mapsto X \exp(t\Omega)$. The curve $c$ defines a geodesic on $SO(d)$ such that $c(0)=X$ and $c^{\prime}(0)=V:=X\Omega$. \\ Recall here that since $SO(n)$ is considered here as a Riemannian submanifold, the covariant derivative along $c$ is $\frac{D}{dt}=\text{Proj}_{c(t)}\left(\frac{d}{dt}\right)$ and here
+$$\text{Proj}_Z(U)=\frac{1}{2}Z(Z^TU-U^TZ),~~(Z,U)\in TSO(n).$$
+First, $c$ is a smooth curve on $SO(n)$. Second, we need to show that $c^{\prime \prime}=0$. 
+\begin{eqnarray*}
+\frac{D}{dt}(c^{\prime}(t))&=&\text{Proj}_{c(t)}\left(\frac{d}{dt}c^{\prime}(t)\right)\\
+&=&\text{Proj}_{c(t)}(c(t)\Omega^2)\\
+&=&\frac{c(t)}{2}(c(t)^{T}(c(t)\Omega^2)-(c(t)\Omega^2)^Tc(t))\\
+&=&\frac{c(t)}{2}(\Omega^2-\Omega^2)=0
+\end{eqnarray*}
+In fact, one can show that $c$ is the only geodesic on $SO(n)$ defined on $\R$ with $c(0)=X$ and $c^{\prime}(0)=V$. 
+\end{exm}
+
+\subsection{Riemannian distance}
+
+\begin{defn}[Length of a curve]
+Let $\M$ be a Riemannian manifold and $c:[a,b]\to \M$ a piecewise smooth curve segment.\\
+The length of $c$ is given by
+$$L(c)=\int_a^{b}\|c^{\prime}(t)\|_{c(t)}dt.$$
+\end{defn}
+Having a notion of length can lead to defining a distance on the manifold $\M$ between two points $x$ and $y$.
+\begin{defn}[Riemannian distance]
+The function $\text{dist}:\M\times \M \to \R$ given by
+$$\text{dist}(x,y):=\inf_{c}L(c)$$
+where the infimum is taken over all piecewise regular curve segments on $\M$ connecting $x$ to $y$ defines a distance if $\M$ is connected. Such distance is called the \emph{Riemannian distance}. 
+\end{defn}
+\begin{rmk}
+Endowed with this distance, $\M$ is a metric space and the topology induced by it coincides with the topology given by its atlas.\\ If the infimum is attained for some curve segment $c$, such curve is called a \emph{minimizing curve}, which coincide with geodesics.
+\end{rmk}
+\begin{exm}
+Let $\M=\M_1\times \dots \M_n$ a Riemannian product manifold. The Riemannian distance on $\M$ is given by
+$$\text{dist}_{\M}(x,y)=\left(\sum_{i=1}^{n}\text{dist}_{\M_i}(x_i,y_i)^2\right).$$
+\end{exm}
+\begin{defn}[Completeness]~
+\begin{itemize}
+\item A connected Riemannian manifold is \emph{metrically complete} if it is complete as a memtric space equipped with the Riemannian distance.
+\item A Riemmanian manifold is \emph{geodesically complete} if every geodesic can be extended to a geodesic defined on the whole real line. 
+\end{itemize}
+\end{defn}
+The following theorem makes the link between the seemingly different notions of completeness mentioned above.
+
+\begin{thm}[Hopf--Rinow]
+Let $\M$ be a \emph{connected} Riemannian manifold.
+\begin{enumerate}
+\item[(i)] Metric completeness is equivalent to geodesic completeness.
+\item[(ii)] $\M$ is complete if and only if its compact subsets are exactly its closed and bounded subsets.
+\end{enumerate}
+\end{thm}
+One of the advantages of being a complete manifold is the possibility to connect any two points by a geodesic.
+\begin{thm}
+If $\M$ is a complete Riemannian manifold, then any two points $x,y$ belong to the same connected component are connected by a minimizing geodesic $c:[0,1]\to \M$ such that $c(0)=x,~c(1)=y$ and the distance between $x$ and $y$ is attained: $\text{dist}(x,y)=L(c)$. 
+\end{thm}
+
+\subsection{Exponential and logarithmic map}
+On a Riemannian manifold, it can bee shown that for every couple $(x,v)\in T\M$, there exists a unique (maximal) geodesic $\gamma_v:I\to \M$ such that
+$$\gamma_v(0)=x~\text{ and }~\gamma^{\prime}_v(0)=v.$$
+The Exponential map at a given point $x$ and tangent vector $v$ generalize the concept of "$x+v$" while remaining on the manifold.
+\begin{defn}[Exponential map]
+Let
+$$\mathcal{O}=\left\{(x,v)\in T \M : \gamma_{v} \text{ defined on }I \supseteq [0,1]\right\}.$$
+The \emph{exponential map} $\text{Exp}:\mathcal{O}\to \M$ is defined by
+$$\text{Exp}(x,v)=\text{Exp}_x(v)=\gamma_{v}(1).$$
+The restriction $\text{Exp}_x$ is defined on $\mathcal{O}_x=\{v\in T_x\M: (x,v)\in \mathcal{O}\}$.
+\end{defn}
+The domain $\mathcal{O}$ contains all tangent space origins:
+$$\{(x,0)\in T \M: x\in \M\}\subset \mathcal{O}\}.$$
+\begin{exm}~
+\begin{itemize}
+\item In a Euclidean space, $\text{Exp}_x(v)=x+v$. 
+\item On $S^{d-1}$, let $\gamma:\R \to S^{d-1}$ such that $\gamma(0)=x$ and $\dot{\gamma}(0)=v\neq 0$ and
+$$\gamma(t)=\cos(t\|v\|)x+\sin(t\|v\|)\frac{v}{\|v\|}.$$
+For all $t\in \R,~\gamma^{\bot}\gamma(t)=1$ and $\gamma$ has been shown to be a geodesic. \\Hence $\text{Exp}_x:T_xS^{d-1}\setminus\{0\}\to S^{d-1}$ is $\text{Exp}_x(\xi)=\cos(\|v\|)x+\sin(\|v\|)\frac{v}{\|v\|}$, which can be smoothly extended at $v=0$ using $\sin(x)/x\to 1$ when $x\to 0$.
+\item \textbf{Exponential map on $SO(n)$}: Recall that $SO(n)$ is an embedded submanifold of $\R^{n\times n}$ of dimension $\frac{n(n-1)}{2}$ with tangent spaces
+$$T_XSO(n)=\{V\in \R^{n\times n}\mid X^T V +V^{T}X\}~,~~X\in SO(n).$$
+Consider the smooth matrix exponential $\exp:\R^{n\times n}\to \R^{n\times n}$ defined as
+$$\exp(A)=\sum_{k=0}^{+\infty}\frac{A^k}{k!},~~\text{with}~A^{0}=\text{I}_n.$$
+Let $\Omega\in \R^{n\times n}$ be skew-symmetric, i.e. $\Omega=-\Omega^{T}$.
+\begin{itemize}
+\item[(i)] $\exp(\Omega)\in SO(n)$: indeed, we have
+$$\exp(\Omega)^{T}\exp(\Omega)=\exp(-\Omega)\exp(\Omega)=\text{I}_n.$$
+Moreover, $\det(\exp(\cdot))$ is constant on $\text{Skew}(n)$ since $\text{Skew}(n)$ is  star-shaped and $\det(\exp(0)=1$ hence $\det(\exp(\Omega))=1$ for any $\Omega \in \text{Skew}(n)$.
+\item[(ii)] $\frac{d}{dt}[\exp(t\Omega)]_{t=0}=\Omega$ since one can show that
+$$\left\|\frac{\exp(t\Omega)-\exp(0)}{t}-\Omega\right\| \leq |t| \times \|\Omega\|^2\exp(|t|\times \|\Omega\|) \to_{\to 0} 0.$$
+\item[(iii)] Let $(X,V)\in TSO(n)$ and $R_X(V)=X\exp(X^TV)$. It defines a retraction. Indeed, $R_X(V) \in SO(n)$ since $X^TV$ is skew symmetric, $\exp(X^TV)\in SO(n)$ hence $X\exp(X^TV)\in SO(n)$. Besides, $R:(X,V)\in \R^{n\times n}\times \R^{n\times n} \mapsto X\exp(X^{T}V)\in \R^{n\times n}$ is smooth. We have $R_X(0)=X$ and
+$$\frac{d}{dt}[R_X(tV)]_{t=0}=X\frac{d}{dt}[\exp(tX^{T}V)]_{t=0}=XX^{T}V=V.$$
+It can be shown that $R_X$ is not injective for $X\in SO(n)$.
+\end{itemize}
+
+\end{itemize}
+
+\end{exm}
+Since $\gamma_{tv}(1)=\gamma_v(t)$ for $t\in \R$, we have
+$$\text{Exp}_x(tv)=\gamma_v(t).$$
+\begin{prop}
+The exponential map $\text{Exp}:\mathcal{O}\to \M$ is smooth on $\mathcal{O}$, the latter being an open set in $T\M$ and which contains all tangent spaces origins.
+\end{prop}
+\begin{rmk} With the same notations, $\mathcal{O}$ is neighborhood of the zero-section of $T\M$, i.e.
+$$\{(x,0)\in T\M\mid x\in \M\}\subset \mathcal{O}.$$
+\end{rmk}
+\begin{prop}
+The exponential map $\text{Exp}: \mathcal{O} \to \M$ is a second-order retraction.
+\end{prop}
+\begin{proof}
+Smoothness is assumed from the previous Proposition. We know that for every $(x,v)\in T\M$, the following curve $c:t\mapsto \text{Exp}_x(tv)=\gamma_v(t)$ satisfies $c(0)=x$ and $c^{\prime}(0)=v$, which proves $\text{Exp}$ is a retraction. Since $\forall t,~\gamma_v^{\prime \prime}(t)=0$, we have $c^{\prime \prime}(0)=0$ hence $\text{Exp}$ is second-order retraction.
+\end{proof}
+Note that any retraction at a point $x$ is locally a diffeomorphism around the origin in the tangent space at $x$ (indeed, it is smooth and its differential at $x$ taken at $0$ is the identity).
+\begin{exm}
+Let $\M=\M_1\times \M_2$ be a Riemannian product manifold, with $\mathcal{O}_1, \mathcal{O}_2$ being the domains of the exponential maps on $\M_1$ and $\M_2$ respectively. The domain of the exponential map on $\M$ is $\mathcal{O}_1\times \mathcal{O}_2$ and for all $(x_1,v_1)\in \mathcal{O}_1$ and $(x_2,v_2)\in \mathcal{O}_2$, we have
+$$\text{Exp}_x(v)=(\text{Exp}_{x_1}(v_1),\text{Exp}_{x_2}(v_2))~~\text{where}~~x=(x_1,x_2)~\text{and}~v=(v_1,v_2).$$
+\end{exm}
+\begin{defn}[Injectivity radius]
+The \emph{injectivity radius} of $\M$ at $x$, denoted by $\text{inj}(x)$,  is defined as the supremum of $r>0$ such that $\text{Exp}_x$ is defined and is a diffeomorphism on the open ball $B(x,r):=\{v\in T_x\M\mid \|v\|_x<r\}$. 
+\end{defn}
+Note that by the inverse function theorem, $\text{inj}(x)>0$.\\ Let $U:=B(x,\text{inj}(x))\subseteq T_x\M$. Its image by $\text{Exp}_x$, denoted by $\mathcal{U}$, is a neighborhood of $x$ in $\M$. Then, $\text{Exp}_x:U \to \mathcal{U}$ is a diffeomorphism, hence posses a well-defined smooth inverse $\text{Exp}_x^{-1}$. In particular, $v:=\text{Exp}_x^{-1}(y)$ is the unique shortest (tangent) vector at $x$ verifying $\text{Exp}_x(v)=y$ and it motivates the following definition of the \emph{logarithmic map} at $x$.
+\begin{defn}[Logarithmic map]
+Let $x\in \M$. 
+$$\text{Log}_x(y):=\arg \min_{v\in \mathcal{O}_x}\|v\|_x~~\text{subject to }\text{Exp}_x(v)=y$$
+with domain such that it is uniquely defined.
+\end{defn}
+\begin{rmk}
+For two points $x$ and $y$, the logarithmic map generalizes the concept of "$y-x$.
+\end{rmk}
+Let us state some useful relations between the exponential map, the logarithmic map and the Riemannian distance.
+\begin{prop}
+If $\|v\|_x<\text{inj}(x)$, the geodesic $c: t\in [0,1] \mapsto \text{Exp}_x(tv)$ is the minimizing curve connecting $x$ to $y=\text{Exp}_x(v)$ (unique up to parametrization) and we have
+$$\text{dist}(x,y)=\|v\|_x~~\text{ and }~~\text{Log}_x(y)=v.$$
+\end{prop}
+\begin{exm}
+In a Euclidean space $\E$, $\text{Log}_x(y)=y-x$ for all $x,y\in \E$.
+\end{exm}
+\begin{exm}Let $x,y\in S^{n-1}$ such that $y\neq \pm x$. \\
+On the sphere $S^{n-1}$, the exponential map is $\text{Exp}_x(v)=\cos(\|v\|)x+\frac{\sin(\|v\|)}{\|v\|}v=:y$. \\
+ Let us find an expression for the inverse $\text{Exp}_x^{-1}(y)$, i.e. we are looking for $v\in T_xS^{d-1}$ such that $\text{Exp}_x(v)=y$. Given that $x^{\bot}x=1$ and x${\bot}v=0$, we have $x^{\bot}y=\cos(\|v\|)$, thus
+ $$y=(x^Ty)x+\sin(\|v\|)\frac{v}{\|v\|}.$$ 
+The orthogonal projection of $y$ onto $T_xS^{d-1}$ is
+$$P_x(y)=(\text{I}_x-xx^{T})y=\sin(\|v\|)\frac{v}{\|v\|}.$$
+Normalizing the projection:
+$$\frac{P_x(y)}{\|P_x(y)\|}=\text{sign}(\sin(\|v\|))\frac{v}{\|v\|}.$$
+Now, let us restrict the domain of $\text{Exp}_x$ to $v$ such that $\|v\|<\pi$ leads to 
+$$x^Ty=\cos(\|v\|) \iff \|v\|=\arccos(x^Ty)$$
+which implies
+$$v=\arccos(x^Ty)\frac{P_x(y)}{\|P_x(y)\|}.$$
+Since $v$ is unique, we have $\log_x(y)=v$ for $y\neq \pm x$ and $\log_x(y)=0$ for $y=x$. For $y=-x$ (antipodal point of $x$, there is an infinite number of $v$ such that $\text{Exp}_x(v)=y$ and no logarithmic map for $y=-x$. \\ One can check that $\text{Exp}_x:B(x,\pi)\to S^{d-1}\setminus \{-x\}$ is a diffeomorphism. Moreover,
+$$d_{S^{d-1}}(x,y)=\|\log_x(y)\|=\arccos(x^Ty).$$
+
+
+\end{exm}
+
+
+
+\subsection{Parallel transport}
+Let $\M$ equipped with a connection $\nabla$. We wish to move a velocity $u\in T_x\M$ to $T_y\M$ along a curve $c$ such that $c(0)=x$ and $c(1)=y$.
+\par \medskip
+Let $c:I\to \M$ be a smooth curve such that $c(0)=x$ and $c(1)=y$. Let $Z\in \X(c)$ a smooth vector field on $c$ with $Z(0)=u$. 
+\begin{defn}[Parallel vector field]
+With the same notation, if $\frac{D}{dt}Z=0$, then $Z$ is called a \emph{parallel vector field}.
+\end{defn}
+Let $\M$ be a manifold with a connection $\nabla$ and covariant derivative $\frac{D}{dt}$. 
+\begin{thm}
+For any smooth curve $c:I\to \M,~t_0\in I$ and $u\in T_{c(t_0)}\M$, there exists a unique parallel vector field $Z\in \X(\M)$ such that $Z(t_0)=u$.
+\end{thm}
+\begin{defn}[Parallel transport of tangent vectors]
+Let $c$ be a smooth curve on $\M$. The \emph{parallel transport of tangent vectors } at $c(t_0)$ to the tangent space at $c(t_1)$ along $c$ is the map
+$$PT^{c}_{t_1\leftarrow t_0}: T_{c(t_0)}\M \to T_{c(t_1)}\M$$
+such that
+$$PT^{c}_{t_1\leftarrow t_0}(u)=Z(t_1)$$
+where $Z\in \X(c)$ is the unique parallel vector field such that $Z(t_0)=u$. 
+\end{defn}
+\begin{rmk}
+Parallel transport from $x$ to $y$ depends on the choice of curve connecting $x$ and $y$, which is chosen as the geodesic between $x$ and $y$.
+\end{rmk}
+The parallel transport operator $PT^{c}_{t_1\leftarrow t_0}$ enjoys the following properties.
+\begin{prop}
+Let $PT^{c}_{t_1\leftarrow t_0}$ be the parallel transport operator of tangent vectors at $c(t_0)$ to the tangent space at $c(t_1)$ along the curve $c$.
+\begin{itemize}
+\item $PT^{c}_{t_1\leftarrow t_0}$ is linear;
+\item $PT^{c}_{t_2\leftarrow t_1}\circ PT^{c}_{t_1\leftarrow t_0} =PT^{c}_{t_2\leftarrow t_0}$ and $PT^{c}_{t\leftarrow t}=\text{Id}$;
+\item If $\M$ is a Riemannian manifold and $\nabla$ is compatible with the Riemannian metric, then parallel transport is an isometry:
+$$\forall u,v\in T_{c(t_0)}\M,~\langle u,v\rangle_{c(t_0)}=\langle PT^{c}_{t_1\leftarrow t_0}(u),PT^{c}_{t_1\leftarrow t_0} (v)\rangle_{c(t_1)}.$$ 
+\end{itemize}
+\end{prop}
+\begin{exm}
+On the sphere $S^{d-1}$, the parallel transport of $v\in T_x\M$ along the geodesic $c:t\mapsto \text{Exp}_x(tv)$ such that $c(0)=x,~c(1)=1$ and $\dot{c}(0)=v$ is
+$$PT^{c}_{t\leftarrow 0}(u)=\left(\text{I}_n+(\cos(t\|v\|)-1)\frac{vv^{T}}{\|v\|^2}-\sin(t\|v\|)\frac{xv^{T}}{\|v\|}\right)u.$$
+\end{exm}
+
+One application of parallel transport is Riemann conjugate gradient algorithm. Recall that the standard Riemannian gradient descent algorithm provides iterates of the form
+$$x^{(k+1)}=R_{x^{(k)}}(\alpha s^{(k)})$$ where $\alpha$ is a step-size and $s^{(k)}=-\grad h(x^{(k)})$ is the Riemannian gradient of the function $h:\M \to \R$ to optimize evaluated at $x^{(k)}$. This procedure can be slow to converge and the \emph{Riemannian conjugate gradient} adds some inertia:
+$$s^{(k)}=-\grad h(x^{(k)})+\beta PT_{x^{(k-1)}\leftarrow x^{(k)}}(s^{(k-1)}),~~\beta>0.$$
+
+
+
+\begin{exm}\textbf{Transporters on $SO(n)$}
+Recall that $SO(n)=\{X\in \R^{n\times n} \mid X^TX=\text{I}_n~,~\det(X)=1\}$ is a Riemannian submanifold of $\R^{n\times n}$ and
+$$T_X SO(n)=\{X\Omega \mid \Omega \in \R^{n\times n}, \Omega+\Omega^{T}=0\}.$$
+Define $T$ as follows: for $X,Y \in SO(n)$ and $\Omega+\Omega^{T}=0$, 
+$$T_{Y\leftarrow X}(X\Omega)=Y\Omega.$$
+\begin{itemize}
+\item $T$ defines a transporter: let $X,Y \in SO(n)$ and $U\in T_XSO(n)$. There exists $\Omega \in \R^{n\times n}$ skew-symmetric such that $U=X\Omega \iff X^{T}U=\Omega$. Thus
+$$T_{Y\leftarrow X}(U)=T_{Y\leftarrow X}(X\Omega)=Y\Omega=YX^{T}U.$$
+It shows that $T_{Y\leftarrow X}$ is linear hence a transporter.
+\item $T_{Y\leftarrow X}: T_XSO(n)\to T_YSO(n)$ is an isometry: let $U_1=X\Omega_1\in T_XSO(n)$ and $U_2=X\Omega_2\in T_XSO(n)$. We have
+\begin{eqnarray*}
+\langle T_{Y\leftarrow X}U_1,T_{Y\leftarrow X}U_2\rangle&=&\langle T_{Y\leftarrow X}X\Omega_1,T_{Y\leftarrow X}X\Omega_2\rangle\\
+&=&\langle Y\Omega_1,Y\Omega_2\rangle \\
+&=&\text{Tr}(\Omega_1^{T}Y^TY\Omega_2)=\text{Tr}(\Omega_1^T\Omega_2)\\
+&=&\text{Tr}(\Omega_1^{T}X^TX\Omega_2)\\
+&=&\langle U_1,U_2\rangle.
+\end{eqnarray*}
+\end{itemize}
+It can be shown that all geodesics of $SO(n)$ are of the form $c(t)= X\exp(t\Omega),~c(0)=X,~c'(0)=V=X\Omega$. Let $c:\R \to SO(n)$ be such a geodesic and $X=c(t_0), Y=c(t_1)$ for $t_1\ge t_0\ge 0$. Let us show that $T_{Y\leftarrow X}$ is not equal to parallel transport along $c$ from $t_0$ to $t_1$. \\ Let $U=X\tilde{\Omega} \in T_XSO(n)$. We have $T_{c(0)\leftarrow X}(U)=U$ and $t\mapsto \frac{D}{dt}T_{c(t) \leftarrow X}(U)$ is smooth. Besides, $T_{c(t_1)\leftarrow X}(U)=PT_{t_1\leftarrow t_0}^{c}(U)$ if and only if $\frac{D}{dt}T_{c(t)\leftarrow X}(U)=0$. We have
+\begin{eqnarray*}
+\frac{D}{dt}T_{c(t)\leftarrow X}(U)&=&\text{Proj}_{c(t)}\left(\frac{d}{dt}(c(t)X^{T}U)\right)\\
+&=&\text{Proj}_{c(t)}(c'(t)X^TU)\\
+&=&\frac{c(t)}{2}(c(t)^T(c'(t)X^TU)-(c'(t)X^TU)^Tc(t))\\
+&=&\frac{c(t)}{2}(\Omega X^TU-U^TX\Omega^T)\\
+&=&\frac{c(t)}{2}(\Omega \tilde{\Omega}-\tilde{\Omega}^T\Omega^T)
+\end{eqnarray*}
+Hence
+$$\frac{D}{dt}T_{c(t)\leftarrow X}(U)= 0 \iff (\tilde{\Omega}\Omega)^T=\tilde{\Omega}\Omega$$
+which is not true in general.
+\end{exm}
+
+
+\chapter{Optimization algorithms}
+In the following, let $f: \M \to \R$ be the (smooth) function of interest (objective function) defined on a Riemannian manifold $\M$. We want to solve
+$$\arg \min_{x\in \M}f(x).$$
+Minimizers may not exist, and if so, uniqueness is not guaranteed in general. Usually, we rather aim at a local minimizer.
+\section{First-order optimization}
+\subsection{First-order Taylor expansion on curves}
+Let $c:I\subset \R\to \M$ a smooth curve on a Riemannian manifold $\M$ such that $c(0)=x$ and $c'(0)=v$ with $I$ an open interval of $\R$ around 0. Let
+$$g:I\to \R: t \mapsto g(t):=f\circ c(t)$$
+The map $g$ is a smooth map  and admits a first-order Taylor expansion around 0 as follows:
+$$g(t)=g(0)+tg^{\prime}(0)+O(t^2) \iff f(c(t))=f(x)+t\langle \grad f(x),v\rangle_x+O(t^2)$$
+applying the chain rule to get
+$g'(t)=Df(c(t))[c'(t)]=\langle \grad f(c(t)),c'(t)\rangle_{c(t)}$, then evaluated at 0.
+\\ Let specify the curve $c$ as a retraction $c(t)=R_x(tv)$, so that
+$$f(R_x(tv))=f(x)+t\langle \grad f(x),v\rangle_x+O(t^2).$$
+Considering the variable $s=tv\in T_x\M$ yields alternatively
+$$f(R_x(s))=f(x)+\langle \grad f(x),s\rangle_x+O(\|s\|^2_{x}).$$
+\begin{rmk}
+The smooth function $f\circ R_x: T\M \to \R$ is called the \emph{pullback} of $f$ by $R_x$ to the tangent space $T_x\M$. Notice that $f\circ R$ is a map between two linear spaces.
+\end{rmk}
+\subsection{Optimality conditions}
+How can we check if a point $x\in \M$ is a local minimizer for $f:\M\to \R$ ? Let us first state \emph{necessary conditions}.
+
+\begin{defn}[Critical point]
+A point $x\in \M$ is \emph{critical} for $f:\M \to \R$ if for all smooth curves $c$ on $\M$ satisfying $c(0)=x$, we have
+\begin{equation}\label{cond.crit}
+(f\circ c)^{\prime}(0)\ge 0.
+\end{equation}
+\end{defn}
+\begin{rmk}
+Notice that condition (\ref{cond.crit}) is equivalent to $(f\circ c)^{\prime}(0)=0$. Indeed, one can consider $t\mapsto c(t)$ and $t\mapsto c(-t)$. \\ Moreover, thanks to the chain rule on $f\circ c,~x$ is critical for $f \iff Df(x)=0$.
+\end{rmk}
+\begin{prop}
+If $x$ is a local minimizer or maximizer of $f:\M \to \R$, then $x$ is a critical point for $f$.
+\end{prop}
+On Riemannian manifolds, we have the following equivalence involving the nullity of the Riemannian gradient at a critical point.
+\begin{prop}
+A point $x\in \M$ is critical for $f$ if and only if $\grad f(x)=0.$
+\end{prop}
+\begin{proof}
+Let $c:I\to \M$ a smooth curve such that $c(0)=x$ and $c'(0)=v$. \\ Recall that
+$$(f\circ c)^{\prime}(0)=\langle \grad f(x),v\rangle_x.$$
+If $\grad f(x)=0$, then $x$ is critical. If $x$ is critical, considering both $v$ and $-v$ yields the wanted result.
+\end{proof}
+\section{Riemannian gradient descent}
+Recall the standard procedure for gradient descent in a Euclidean space $\E$. Let $x_0$ be our initial point and $\alpha_k>0$ some step-sizes. 
+$$x_0 \in \E~~;~~x_{k+1}=x_k-\alpha_k \grad f(x_k)~~~~k\ge 1,~\alpha_k>0.$$
+\begin{exm}
+Let $\E=\R^d$ endowed with its Euclidean inner product $\langle u,v \rangle_{\E}=u^Tv$. \\ Let $G:\R^d\to \R^{d\times d}$ be a smooth map such that $G(x)\in \text{Sym}(d)^{++}$ for all $x\in \R^d$. On $\M=\R^d$, we define the metric
+$$\langle u,v\rangle_{\M}=u^TG(x)v.$$
+It defines a Riemannian metric on $\M$. Recall that the Riemannian gradient of $f$ is
+$$\grad_{\M}f(x)=G(x)^{-1}\grad_{\E}f(x).$$
+Let us consider a retraction $R_x(u)=x+u$ on $\R^d$. Riemannian gradient descent is given by
+$$x_{k+1}=x_k-\eta_kG(x)^{-1}\grad_{\E}f(x).$$
+Note that for $G(x)=\text{Hess}f(x)$ and $\eta_k=1$, this RGD is no other than Newton's method.
+\end{exm}
+\subsection{Algorithm and convergence}
+For \emph{Riemannian gradient descent} on $\M$, we first choose a retraction $R$ on $\M$, an initial point $x_0\in \M$ and iterate for $k\ge 1$, 
+$$x_{k+1}=R_{x_k}(s_k)\text{ with }s_k=-\alpha_k \grad f(x_k)).$$
+How to choose the step-size $\alpha_k$? Let 
+$$g(t)=f\left(R_{x_k}(-t\grad f(x_k))\right).$$
+The goal is to minimize $g$ without too great a computational cost. Three stategies can be used:
+\begin{description}
+\item[Fixed step-size] $\alpha_k=\alpha$ for all $k$
+\item[Optimal step-size] $\alpha_k$ minimizes $g(t)$ exactly (often costly)
+\item[Backtracking] start with a guess $t_0>0$ and at each iteration, reduce it by a factor $\tau \in (0,1)$ to that $t_i=\tau t_{i-1}$ until "acceptable", then set $\alpha_k=t_i$. 
+\end{description}
+
+
+
+
+Let us examine the convergence of this algorithms under the following assumptions on the cost function $L$:
+\begin{description}
+\item[A.1] There exists $f_{\text{low}}\in \R$ such that for all $x\in \M,~f(x)\ge f_{\text{low}}$. 
+\item[A.2] There exists a constant $c>0$ such that, for all $k\ge 1$,
+$$f(x_k)-f(x_{k+1})\ge c\|\grad f(x_k)\|^2.$$
+\end{description}
+Notice there are no conditions on the initialization $x_0\in \M$.
+\begin{prop}
+With the previous notation, under \textbf{A.1} and \textbf{A.2}, we have
+$$\lim_{k\to +\infty}\|\grad f(x_k)\|=0.$$
+Moreover, for all $K\ge 1$, there exists $k\in \{0,\dots, K-1\}$ such that
+$$\|\grad f(x_k)\|\leq \sqrt{\frac{f(x_0)-f_{\text{low}}}{c}}\frac{1}{\sqrt{K}}$$
+\end{prop}
+\begin{proof}
+For $K\ge 1$, we have the telescoping
+\begin{eqnarray*}
+f(x_0)-f_{\text{low}}&\ge& f(x_0)-f(x_K)\\
+&=&\sum_{k=0}^{K-1}f(x_k)-f(x_{k+1})\\
+&\geq &Kc\min\left\{\|\grad f(x_k)\|^2 \mid k=0,\dots, K-1\right\}
+\end{eqnarray*}
+By \textbf{A.2}, $f(x_{k+1})\leq f(x_k)$ for all $k$. Taking $K\to \infty$ gives
+$$f(x_0)-f_{\text{low}}\ge \sum_{k=0}^{\infty}f(x_k)-f(x_{k+1}).$$
+Such a convergence implies that 
+$$0\lim_{k\to\infty}f(x_k)-f(x_{k+1})\ge c\lim_{k\to \infty}\|\grad f(x_k)\|^2.$$
+If $x$ is an accumulation point of $\{x_k\}_{k\ge 0}$, since the norm is a continuous function, we get
+$$\|\grad f(x)\|=0.$$
+\end{proof}
+\begin{rmk}
+Assuming there exists at least one accumulation point for the cost function $f$, the previous property means that gradient descent converges to critical points.
+\end{rmk}
+Motivated by standard Taylor expansion of real functions, let us explore regularity assumptions to help guarantee sufficient decrease.
+
+
+
+
+\subsection{Regularity assumptions and complexity}
+Recall that, since $x_{k+1}=R_{x_k}(-\alpha_k \grad f(x_k))$, first-order Taylor expansion gives
+\begin{eqnarray*}
+f(x_{k+1})&=&f(R_{x_k}(-\alpha_k \grad f(x_k))\\
+&=&f(x_k)+\langle \grad f(x_k),s_k\rangle +O(\|s_k^2\|).
+\end{eqnarray*}
+Assume the following Lipschitz-type assumption:
+\begin{description}
+\item[A.3] For a fixed $S\subset T\M$, there exists $L>0$ such that, for all $(x,s)\in S$, we have
+$$f(R_x(s))\leq f(x)+\langle \grad f(x),s\rangle +\frac{L}{2}\|s\|^2.$$ 
+\end{description}
+\begin{rmk}
+For $f$ a smooth function on a Euclidean space $\E$ equipped with the canonical retraction $R_x:s\mapsto x+s$, assuming \textbf{A.3} on $T\E=\E\times \E$ means that for all $x,s\in \E$, we have
+$$f(x+s)\leq f(x)+\langle \grad f(x),s\rangle +\frac{L}{2}\|s\|^2.$$
+It is well-known in Euclidean optimization that Lipschitz continuity of the gradient is enough to ensure such inequality. 
+\end{rmk}
+
+
+
+The following result shows that under \textbf{A.3}, there exists a range of learning rates leading to sufficient decrease in the sense of assumption \textbf{A.2}.
+\begin{prop}
+With the previous notations, if the pairs $\{(x_k,-\alpha_k \grad f(x_k))\}_{k\ge 0}$ generated by the Riemannian gradient descent algorithm are such that $\alpha_k \in [\alpha_{\min},\alpha_{\max}]\subset (0,2/L)$ and $(x_k,-\alpha_k \grad f(x_k))\in S$ for all $k\ge 0$, then assumption \textbf{A.2} holds with
+$$c=\min\left(\alpha_{\min}-\frac{L}{2}\alpha_{\min}^2,\alpha_{\max}-\frac{L}{2}\alpha_{\max}^2\right)>0.$$
+\end{prop}
+\begin{proof}
+It relies on the following inequality obtained by applying the assumption \textbf{A.3}:
+$$f(x_k)-f(x_{k+1})\ge \left(\alpha_k-\frac{L}{2}\alpha_k^2\right)\|\grad f(x_k)\|^2$$
+and the study of the quadratic expression in $\alpha_k$.
+\end{proof}
+When $L$ is known, we have the following corollary.
+\begin{cor}
+Let $f$ be a smooth function verifying \textbf{A.1}. For a retraction $R$, assume $f\circ R$ verify \textbf{A.3} on a subset $S\subseteq T\M$ with constant $L$. \\ Let $\{(x_k,s_k)\}_{k\ge 0}$ be the paris generated by the Riemannian gradient descent algorithm with \emph{constant step-size} $\alpha_k=\frac{1}{L}$. If for all $k\ge 0,~(x_k,s_k)\in S$, then
+$$\lim_{k\to\infty}\|\grad f(x_k)\|=0.$$
+Besides, for $K\ge 1$, there exists $k\in \{0,\dots, K-1\}$ such that
+$$\|\grad f(x_k)\|\leq \sqrt{2L(f(x_0)-f_{\text{low}}}\frac{1}{\sqrt{K}}.$$
+\end{cor}
+
+\subsection{Backtracking line-search}
+In practice, an appropriate value for $L$ is rarely known, therefore the following \emph{backtracking line-search} strategy is implemented to pick the step-sizes $\alpha_k$ in an adaptive way: given an initial step-size $\bar{\alpha}$, the procedure iteratively reduces the new candidate step-size by $\tau \in (0,1)$ until the following condition, called the \emph{Armijo--Goldstein} condition is ensured
+$$f(x)-f(R_x(-\alpha \grad f(x)))\ge r\alpha \|\grad f(x)\|^2,$$
+for some constant $r\in (0,1)$. 
+
+\begin{algorithm}
+\caption{Backtracking Line Search on a Manifold}
+\begin{algorithmic}[1]
+\Require $\tau, r \in (0,1)$, $x \in \mathcal{M}$, $\bar{\alpha} > 0$
+\State $\alpha \leftarrow \bar{\alpha}$
+\While{$f(x) - f(R_x(-\alpha \mathrm{grad} f(x))) < r\alpha \|\mathrm{grad} f(x)\|^2$}
+    \State $\alpha \leftarrow \tau \alpha$
+\EndWhile
+\State \Return $\alpha$
+\end{algorithmic}
+\end{algorithm}
+Under \textbf{A.3}, backtracking line-search ensures \textbf{A.2}, without the need to know explicitly the regularity constant $L$ to run the algorithm.
+
+\begin{lma}
+Let $f$ be a smooth function on a Riemannian manifold $\M$. For a retraction $R$, a point $x\in \M$ and an initial step-size $\bar{\alpha}>0$, assume \textbf{A.3} holds for $f\circ R$.
+\end{lma}
+
+\begin{cor}
+
+\end{cor}
+\subsection{RIemannian conjugate gradient}
+
+Recall the iterative process of Riemannian gradient descent:
+$$x_{k+1}=R_{x_k}(\alpha_kd_k),~~\text{where}~~d_k=-\nabla f(x_k),~\alpha_k>0.$$
+We want here to incorporate some inertia in the procedure. In a standard Euclidean setting, one would write
+$$d_k=-\grad f(x_k)+\beta_{k-1}d_{k-1}.$$
+Here on the manifold, $d_{k-1}\in T_{x_{k-1}}\M$ while $\grad f(x_k)\in T_{x_k}\M$, hence cannot be combined directly since they do not belong to the same linear subspace. One way to counter this is to transport $d_{k-1}$ to $x_k$ using transport:
+$$\tilde{d}_{k-1}:=\mathcal{T}_{x_k\leftarrow x_{k-1}}(d_{k-1}) \in T_{x_k}\M$$
+which gives the updates search direction
+$$d_{k}=-\grad f(x_k)+\beta_{k-1}\tilde{d}_{k-1}.$$
+
+\begin{algorithm}
+\caption{Riemannian Conjugate Gradient}
+\begin{algorithmic}[1]
+\Require Initialization: $x_0 \in \mathcal{M}$, $d_0 = -g_0=-\operatorname{grad} h(x_0)$
+\Ensure $x_k \in \mathcal{M}$
+\For{$k = 0$ to convergence}
+    \If{$\langle g_k, d_k \rangle_{x_k} \geq 0$}
+        \State $d_k =-g_k,$
+    \EndIf
+    \State $\alpha_k = \text{Linesearch}(x_k, d_k)$
+    \State $x_{k+1} = R_{x_k}(\alpha_k d_k)$
+    \State $g_{k+1} = \operatorname{grad} h(x^{(k+1)})$
+    \State $\tilde{d}_{k} = T_{x^{(k)}, x^{(k+1)}}(d_k)$
+    \State $\tilde{g}_{k} = T_{x^{(k)}, x^{(k+1)}}(g_k)$
+    \State $\beta = \max \left(0, \frac{\langle g_{k+1} - \tilde{g}_k, g_{k+1} \rangle_{x_{k+1}}}{\langle g_{k+1} - \tilde{g}_k, \tilde{d}_k \rangle_{x_{k+1}}} \right)$
+    \State $d_{k+1} = -g_{k+1} + \beta \tilde{d}_k$
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+\begin{rmk}
+As parallel transport is not always available in closed form or may be expensive to compute, vector transport is a cheaper generalization that works well in practice. \\ The inertia parameter $\beta$ is computed using the \emph{Hestenes--Stiefel} rule but other rules could be used (See e.g. \cite{hager2006survey}). 
+\end{rmk}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\section{Second-order Taylor expansion on curves and retractions}
+Let $f: \M \to \R$ a smooth function and $c:I\to \M$ a smooth curve such that $c(0)=x$ and $c^{\prime}(0)=v$. Set as before  the smooth function $g=f\circ c: I\subseteq \R \to \R$. Second-order Taylor expansion is
+$$g(t)=g(0)+tg^{\prime}(0)+tg^{\prime}(0)+\frac{t^2}{2}g^{\prime \prime}(0)+O(t^3).$$
+We have
+$$g^{\prime}(t)=Df(c(t))[c'(t)]=\langle \grad f(c(t)),c^{\prime}(t)\rangle_{c(t)}$$
+so that
+$$g^{\prime}(0)=\langle \grad f(x),v\rangle_x.$$
+Now let us turn to $g^{\prime \prime}(t)$. Using covariant derivative property and Hessian definition, we obtain
+\begin{eqnarray*}
+g^{\prime \prime}(t) &=&\frac{d}{dt}\langle \grad f(c(t)),c^{\prime}(t)\rangle_{c(t)}\\
+&=&\left \langle \frac{D}{dt}(\grad f \circ c)(t),c^{\prime}(t)\right\rangle_{c(t)}+\left\langle \grad f(c(t)),\frac{D}{dt}c^{\prime}(t)\right\rangle_{c(t)}\\
+&=&\left\langle \nabla_{c^{\prime}(t)}\grad f, c^{\prime}(t)\right \rangle_{c(t)}+\langle \grad f(c(t)),c^{\prime \prime}(t)\rangle_{c(t)}\\
+&=&\langle \text{Hess}f(c(t))[c^{\prime}(t)],c^{\prime}(t)\rangle_{c(t)}+\langle \grad f(c(t)),c^{\prime \prime}(t)\rangle_{c(t)}
+\end{eqnarray*}
+Having $t=0$ gives
+$$g^{\prime \prime}(0)=\langle \text{Hess}f(x)[v],v\rangle_x+\langle \grad f(x),c^{\prime \prime}(0)\rangle_{x}$$
+The previous computations yield 
+$$f(c(t))=f(c)+t\langle \grad f(x),v\rangle_x+\frac{t^2}{2}\langle \text{Hess}f(x)[v],v\rangle_x +\frac{t^2}{2}\langle \grad f(x),c^{\prime \prime}(0)\rangle_x+O(t^3).$$
+
+We can deduce the following result.
+\begin{lma}
+Let $c(t)$ be a geodesic connecting $x=c(0)$ to $y=c(1)$. If there exists $\mu \in \R$ such that for all $t\in [0,1],~\text{Hess} f(c(t)) \succ \mu \text{Id}$, then
+$$f(y)\ge f(x)+\langle \grad f(x),v\rangle_x+\frac{\mu}{2}\|v\|_x^2.$$
+\end{lma}
+\begin{proof}
+Under the assumption, the mean value theorem and the fact that $\|c^{\prime}(t)\|_{c(t)}$ is constant for $c$ being a geodesic makes it possible to show that there exists $t\in (0,1)$ such that
+$$f(y)=f(x)+\langle \grad f(x),c^{\prime}(0)\rangle_x+\frac{1}{2}\langle \text{Hess}f(c(t))[c^{\prime}(t)],c^{\prime}(t)\rangle_{c(t)}+\frac{1}{2}\langle \grad f(c(t)),c^{\prime \prime}(t)\rangle_{c(t)}.$$
+\end{proof}
+Let $x\in \M$ and $v\in T_x\M$. Let us now consider the case where 
+$$c(t)=R_x(tv).$$
+The previous second-order Taylor formula motivates the following definition.
+\begin{defn}
+Let $R$ be a retraction. $R$ is a \emph{second-order retraction} on $\M$ if for all $x\in \M,~v\in T_x\M$, the curve $c(t)=R_x(tv)$ verifies
+$$c^{\prime \prime}(0)=0.$$
+\end{defn}
+\begin{exm}
+On the sphere $S^{d-1}$, the following retraction is second-order:
+$$R_x(v)=\frac{x+v}{\|x+v\|}.$$
+Indeed, set $c(t)=R_x(tv)=\frac{x+tv}{\sqrt{1+t^2\|v\|^2}}$. We can see that
+$$\ddot{c}(t)=-\|v\|^2(x+3tv)+O(t^2)$$
+so that $\ddot{c}(0)=-\|v\|^2x$. Hence
+$$c^{\prime \prime}(0)=\text{Proj}_x(\ddot{c}(0))=0.$$
+\end{exm}
+
+Combining second-order Taylor expansion with second-order retraction give the following important result.
+\begin{prop}
+Let $R$ be a retraction on a Riemannian manifold $\M$ and $f:\M \to \R$ a smooth function. 
+\begin{itemize}
+\item If $x$ is a critical point of $f$:
+$$f(R_x(s))=f(x)+\frac{1}{2}\langle \text{Hess}f(x)[s],s\rangle_x+O(\|s\|_x^3).$$
+\item If $R$ is a second-order retraction, then for all $x\in \M$:
+$$f(R_x(s))=f(x)+\langle \grad f(x),s\rangle_x+\frac{1}{2}\langle \text{Hess}f(x)[s],s\rangle_x+O(\|s\|_x^3).$$
+\end{itemize}
+In both cases,
+$$\text{Hess}f(x)=\text{Hess}(f\circ R_x)(0).$$
+\end{prop}
+
+
+
+
+
+\section{Lipschitz conditions and Taylor expansions}
+
+We present in this section Lipschitz continuity definitions on Riemannian manifolds. 
+\begin{defn}[Lipschitz continuous function]
+A function $f:\M \to \R$ is $L$-Lipschitz continuous if (and only if)
+$$\forall (x,s)\in \mathcal{O},~|f(\text{Exp}_x(s))-f(x)|\leq L\|s\|$$
+where $\mathcal{O}\subset T\M$ is the domain of the exponential map.
+\end{defn}
+\begin{rmk} It can be proved that this definition is equivalent to having
+$$\forall x,y \in \M,~|f(x)-f(y)|\leq L\text{dist}(x,y)$$
+with $\text{dist}$ the Riemannian distance on $\M$.
+\end{rmk}
+Should $f$ possess a continuous gradient, Lipschitz continuity of $f$ amounts to upper-boundedness of the gradient.
+\begin{prop}
+Let $f:\M \to \R$ be a function having a continuous gradient. The following assertions are equivalent:
+\begin{enumerate}
+\item $f$ is $L$-Lipschitz continuous
+\item $\forall x \in \M,~\|\grad f(x)\|\leq L$.
+\end{enumerate}
+\end{prop}
+\begin{proof}
+Let $(x,s) \in \mathcal{O}$ and $c:t\mapsto \text{Exp}_x(ts)$ for $t\in [0,1]$.
+We have
+$$f(c(1))-f(c(0))=\int_0^{1}\langle \grad f(c(t)),c^{\prime}(t)\rangle dt$$ hence if assertion 2. is verified,
+$$|f(\text{Exp}_x(s))-f(x)|\leq L\int_0^{1}\|c^{\prime}(t)\|dt=L\times L(c)=L\|s\|.$$
+For the other implication, let $x\in \M$ and assume that the domain of $\text{Exp}_x$ is open around the origin. Then
+\begin{eqnarray*}
+\|\grad f(x)\|&=&\max_{s\in T_x\M,~\|s\|=1}\langle \grad f(x),s\rangle\\
+&=& \max_{s\in T_x\M,~\|s\|=1}Df(x)[s]\\
+&=&\max_{s\in T_x\M,~\|s\|=1}\lim_{t\to 0^{+}}\frac{f(\text{Exp}_x(ts))-f(x)}{t}\leq L \text{ using assertion }1.
+\end{eqnarray*}
+\end{proof}
+Now let us define Lipschitz continuity of the \emph{Riemannian gradient} of a function $f$. In order to give meaning to a Riemannian version of "$\grad f(x)-\grad f(y)$", we will resort to parallel transport. Let us give general definitions, having in mind $V=\grad f$.
+\begin{defn}[Lipschitz continuity for vector field]
+A vector field $V$ on $\M$ is $L$-Lipschitz continuous if and only if
+$$\forall (x,s)\in \mathcal{O},~~\|P_s^{-1}V(\text{Exp}_x(s))-V(x)\|\leq L\|s\|,$$
+where $\mathcal{O}\subseteq T\M$ is the domain of $\text{Exp}$ and $P_s$ is the parallel transport along $\gamma(t)=\text{Exp}_x(ts)$ from $t=0$ to $t=1$.
+\end{defn}
+\begin{rmk}
+As before, this definition is equivalent to the more intuitive one:
+$$\forall x,y \in \M, \text{dist}(x,y)<\text{inj}(x),~~\|PT_{0\leftarrow 1}^{\gamma}V(y)-V(x)\|\leq L\text{dist}(x,y)$$
+with $\gamma:[0,1]\to \M$ being the unique minimizing geodesic connecting $x$ et $y$.
+\end{rmk}
+In the same fashion as before, Lipschitz continuity of a vector field amounts to boundedness of its covariant derivative.
+\begin{prop}
+Let $V$ be a continuously differentiable vector field on $\M$. The following assertions are equivalent:
+\begin{enumerate}
+\item $V$ is $L$-Lipschitz continuous
+\item $\forall (x,s) \in T\M,~\|\nabla_s V \|\leq L\|s\|$
+\end{enumerate}
+where $\nabla$ is the Riemannian connection.\\When either 1. or 2. holds true, for any smooth curve $c:[0,1] \to \M$ connecting $x$ to $y$, we have
+$$\|PT_{0\leftarrow 1}^{c}V(y)-V(x)\|\leq L\times L(c).$$
+\end{prop}
+In particular for the Hessian, this yields the following corollary.
+\begin{cor}
+Let $f:\M \to \R$ a twice continuously differentiable function. The following assertions are equivalent:
+\begin{enumerate}
+\item $\grad f$ is $L$-Lipschitz continuous
+\item $\forall x \in \M,~\|\textrm{Hess} f(x)\|=\max_{s\in T_x\M, \|s\|=1} \|\textrm{Hess} f(x)[s]\|\leq L$.
+\end{enumerate}
+\end{cor}
+
+
+\section{Geodesic convexity}
+The idea here is to adapt standard (vector space) convexity settings to Riemannian manifolds using geodesic curves instead of line segments. 
+\begin{defn}[Subset geodesically convex]
+Let $S\subseteq \M$ be a subset of a Riemannian manifold $\M$. The subset $S$ is \emph{geodesically convex}
+ if, for every $x,y \in S$, there exists a geodesic segment $c:[0;1]\to \M$ such that 
+$$c(0)=x,~c(1)=y\text{ and for all} t \in [0,1],~c(t) \in S.$$
+\end{defn}
+\begin{rmk}In the definition, the last line can be restated as saying that $c$ connects $x$ to $y$ in $S$. \\
+Beware, since $S$ can or cannot be a manifold, $c$ is a geodesic for $\M$. \\ The definition states that in a geodesically convex set $S$, any pair of points are connected in $S$ by \emph{at least} one geodesic segment. 
+\end{rmk}
+\begin{exm}~
+\begin{itemize}
+\item The empty set and singletons are geodesically-convex.
+\item If $\M=\E$, there is an equivalence between convexity (in the usual sense) and geodesical convexity.
+\item Any connected and complete Riemannian manifold is geodesically convex, in particular, it is the case of $SO(n), \text{St}(n,p)$ for $p<n$ and $\R_{+}$ equipped with $\langle u,v\rangle :=\frac{uv}{x^2}$.
+\end{itemize}
+\end{exm}
+Let us now define the concept of geodesically convex \emph{function}.
+\begin{defn}[Function geodesically convex]
+A function $f:S\to \R$ is \emph{geodesically convex} if:
+\begin{itemize}
+\item[(i)] $S$ is geodesically convex;
+\item[(ii)] $f\circ c: [0,1]\to \R$ is convex for each geodesic segment $c:[0,1]\to \M$ such that $c([0,1])\subseteq \M$ with $c(0)\neq c(1)$.
+\end{itemize}
+\end{defn}
+\begin{rmk}~\begin{itemize}
+\item Let us restate the definition more explicitly: $f:S\to \R$ is geodesically convex if for all $x,y \in S$ and all geodesics $c$ connecting $x$ to $y$ in $S$,
+$$\forall t\in [0,1],~~f(c(t))\leq (1-t)f(x)+tf(y).$$
+We can also define strict convexity if we require that whenever $x\neq y$, the previous inequality is strict.
+\item In an analogous manner,
+\begin{itemize}
+\item[(i)] $f:S\to \R$ is \emph{geodesically concave} if $- f$ is geodesically convex;
+\item[(ii)] $f:S\to \R$ is \emph{geodesically linear }if its is both geodesically convex and concave;
+\item[(iii)] $f:S\to \R$ is \emph{geodesically $\mu$-strongly convex} for some $\mu>0$ if $S$ is geodesically convex and for each geodesic segment $c:[0,1] \to \M$ such that $c([0,1])\subseteq \M$, we have
+$$f(c(t))\leq (1-t)f(c(0))+tf(c(1))-\frac{t(1-t)}{2}\mu L(c)^2,$$
+where $L(c)=\|c^{\prime}(0)\|_{c(0)}$ is the length of the geodesic segment. 
+\end{itemize}
+\end{itemize}
+\end{rmk}
+As in linear space convexity, geodesic convexity ensures local minimizers are indeed global and strict convexity ensures uniqueness.
+\begin{thm}\label{thm.globalmin} Let $f:S\to \R$.
+\begin{itemize}
+\item[(i)] If $f$ is geodesically convex, then any local minimizer is a global minimizer.
+\item[(ii)] If $f$ is geodesically strictly convex, then $f$ admits at most one global minimizer.
+\end{itemize}
+\end{thm}
+\begin{proof}~
+\begin{itemize}
+\item[(i)] By contradiction, assume $x\in S$ is a local minimizer that is not a global minimizer. Then, there exists $y\in S$ such that $f(y)<f(x)$. There exists $c$ a geodesic in $S$ such that $c(0)=x$ and $c(1)=y$ and
+$$\forall ~0<t \leq 1,~f(c(t))\leq (1-t)f(x)+tf(y)=f(x)+t(f(y)-f(x))<f(x)$$
+which provides the wanted contradiction.
+\item[(ii)] We have to prove uniqueness. By contradiction, assume that there exists $x$ and $y$ such that $f(x)=f(y)=:f_{\ast}$. We also know there exists a geodesic $c$ connecting $x$ to $y$ in $S$ such that
+$$\forall t \in (0,1),~f(c(t))<(1-t)f(x)+tf(y)=f_{\ast}.$$
+The last inequality contradicts global optimality of $x$ and $y$.
+\end{itemize}
+\end{proof}
+\begin{prop}
+Let $\{f_i, i \in I\}$ be an arbitrary family of geodesically convex functions $f_i:S\to \R$. Let $\alpha_i\in R$ for $i\in I$. Set
+$$S_i:=\{x\in S\mid f_i(x)\leq \alpha_i\}.$$
+Then $\tilde{S}:=\bigcap_{i\in I}S_i$ is geodesically convex. \\Moreover, the sublevel sets of a geodesically convex function $f$ are geodesically convex and the set of global minimizers of $f$ is geodesically convex.
+\end{prop}
+\begin{rmk}
+Let $S$ be a geodesically convex set on $\M$ and $f, f_1,\dots, f_m$ geodesically convex functions on $S$ and $g_1,\dots, g_p$ geodesically linear functions on $S$. Let $\alpha_1,\dots, \alpha_m \in \R,~\beta_1,\dots, \beta_p\in \R$. Consider 
+$$\min_{x\in S}f(x)~~\text{ subject to }f_i(x)\leq \alpha_i \text{ for }i=1,\dots, m \text{ and }g_j(x)=\beta_j \text{ for }j=1,\dots, p.$$
+It defines a geodesically convex program. 
+\end{rmk}
+With additional assumptions of differentiability on the function $f:\M \to \R$, we can characterize geodesically convex functions through gradient/Hessian properties. Let us first give first-order conditions.
+\begin{thm}\label{thm.gconv.first}
+Let $S$ be a geodesically convex set on $\M$ and $f:\M \to \R$ be a differentiable function in a neighborhood of $S$. \begin{enumerate}
+\item $f_{\mid S}:S \to \R$ is geodesically convex if and only if for all geodesic segments $c:[0,1]\to \M$ contained in $S$ (with $x=c(0)$), we have
+$$\forall t \in [0,1],~~f(c(t))\ge f(x)+t\langle \grad f(x),c^{\prime}(0)\rangle_x.$$
+\item $f_{\mid S}:S \to \R$ is geodesically $\mu$-strongly convex for some $\mu>0$ if and only if for all geodesic segments $c:[0,1]\to \M$ contained in $S$ (with $x=c(0)$), we have
+$$\forall t \in [0,1],~~f(c(t))\ge f(x)+t\langle \grad f(x),c^{\prime}(0)\rangle_x+t^2\frac{\mu}{2}L(c)^2.$$
+\item $f_{\mid S}:S \to \R$ is geodesically strictly convex if and only if for all geodesic segments $c:[0,1]\to \M$ contained in $S$ (with $x=c(0)$), whenever $c^{\prime}(0)\neq 0$, we have
+$$\forall t \in [0,1],~~f(c(t))> f(x)+t\langle \grad f(x),c^{\prime}(0)\rangle_x.$$
+\end{enumerate}
+\end{thm}
+\begin{proof}
+It relies on the fact that $f_{\mid S}$ is geodesically (strictly) convex if and only if for all $x,y \in S$ and all geodesics $c$ connecting $x$ to $y$ in $S$, the function $f\circ c:[0,1]\to \R$ is (strictly) convex; and therefore the use of the following formula
+$$\forall s,t \in [0,1],~~f(c(t))\ge f(c(s))+(t-s)(f\circ c)^{\prime}(s)$$
+where $(f\circ c)^{\prime}(s)=\langle \grad f(c(s)),c^{\prime}(s)\rangle_{c(s)}$.
+\end{proof}
+We deduce from this theorem the following importance corollary.
+\begin{cor}
+Let $f$ be a differentiable and geodesically convex function on an open geodesically convex set. The following assertions are equivalent:
+\begin{itemize}
+\item[(i)] $x$ is a global minimizer of $f$
+\item[(ii)] $\grad f(x)=0$
+\end{itemize}
+\end{cor}
+\begin{proof}[Sketch of the proof]
+If $\grad f(x)=0$, from the previous Theorem, $f(x)\le f(y)$ for all $y$ in the domain of $f$. \\ The implication $1. \Rightarrow 2.$ follows from the fact that the domain of $f$ is open and Proposition \ref{}.
+\end{proof}
+Let us now give second order conditions of geodesic convexity.
+
+
+\begin{thm}
+Let $f:S\to \R$ be a twice differentiable function on an open geodesically convex set $S$. 
+\begin{enumerate}
+\item $f$ is geodesically convex if and only if for all $x\in S,~\text{Hess}(fx)\succeq 0$;
+\item $f$ is geodesically $\mu$-strongly convex if and only if $x\in S,~\text{Hess}(fx)\succeq \mu \text{Id}$;
+\item $f$ is geodesically strictly convex if $x\in S,~\text{Hess}(fx)\succ0$:
+\end{enumerate}
+\end{thm}
+\begin{proof}[Sketch of the proof]
+We rely on the fact that $f$ is geodesically convex if and only if $f\circ c:[0,1]\to \R$ is convex for all geodesic segments $c:[0,1]\to \M$ whose image is in $S$. This sufficient and necessary condition gives
+$$\forall t \in (0,1),~~(f\circ c)^{\prime \prime}(t)\ge 0.$$
+Since $c^{\prime \prime}(t)=0$ (geodesic property), we have $(f\circ c)^{\prime \prime}(t)=\langle \text{Hess} f(c(t))[c^{\prime}(t)],c^{\prime}(t)\rangle_{c(t)}$. This latter inequality is crucial for the discussion to prove the theorem.
+\end{proof}
+\par \medskip
+Let $S$ be a geodesically convex set and let $f:\M\to \R$ be a differentiable function in a neighborhood of $S$. Assume $f_{\mid S}$ is geodesically convex. Thanks to Theorem \ref{thm.gconv.first}, for $x\in S$ and $v\in T_x\M$ such that $c(t)=\text{Exp}_x(tv) \in S$ for all $t\in [0,1]$, we have the following 
+$$\forall t\in [0,1],~~f(\text{Exp}_x(tv))\ge f(x)+t\langle \grad f(x),v\rangle_x.$$
+\begin{itemize}
+\item If $f$ is geodesically strictly convex, the inequality above is strict for $f\in (0,1]$. 
+\item If $f$ is geodesically $\mu$-strictly convex, we have 
+\begin{equation}\label{eq.gmuconv}
+\forall t \in [0,1],~~f(\text{Exp}_x(tv))\ge f(x)+t\langle \grad f(x),v\rangle_x+t^2\frac{\mu}{2}\|v\|_x^2.
+\end{equation}
+\end{itemize}
+Recall that if the gradient of $f$ is $L$-lipschitz continuous, we have
+\begin{equation}
+\label{eq.gradLcont}
+\forall t\in [0,1],~~f(\text{Exp}_x(tv))\leq f(x)+t\langle \grad f(x),v\rangle_x+t^2\frac{L}{2}\|v\|_x^2.\end{equation}
+
+In the following, $S$ is a non-empty, closed and geodesically convex set in a complete manifold $\M$ and $f: \M\to \R$ is differentiable in a neighborhood of $S$. The following results states that 
+\begin{itemize}
+\item[(i)] strong convexity ensures existence and uniqueness of a minimizer. 
+\item[(i)] the norm of the gradient of a geodesically strongly convex function at some point gives some information about the optimality gap at this point.
+\end{itemize}
+\begin{lma}With the same notations, assume $f_{\mid S}$ is geodesically $\mu$-strongly convex, for some $\mu>0$. Then,
+\begin{enumerate}
+\item the sublevels sets of $f_{\mid S}$ are compact and $f_{\mid S}$ has exactly one global minimizer;
+\item $f$ satisfies a \emph{Polyak--Lojasiewicz} inequality:
+$$\forall x \in S,~f(x)-f(x_{\star})\leq \frac{1}{2\mu}\|\grad f(x)\|_x^2$$
+with $x_{\star}$ denoting the minimizer of $f_{\mid S}$.
+\end{enumerate}
+\end{lma}
+\begin{proof}[Sketch of the proof]
+\begin{enumerate}
+\item For some arbitrary $x_0\in S$, we show that $S_0:=\{x\in S: f(x)\leq f(x_0)\}$ is compact since it is closed and bounded in $\M$, which is a complete manifold. The boundedness is proved by contradiction using (\ref{eq.gmuconv}). Then, using that $f_{\mid S_0}$ is continuous, it attains its minimum $x_{\star} \in S_0$, which, by examining whether any $x\in S$ is such that $x\in S_0$ or $x\not \in S_0$, an be shown to minimize $f_{\mid S}$. The conclusion is drawn thanks to the fact that geodesic strong convexity implies geodesic strict convexity and Theorem \ref{thm.globalmin}.
+\item By the previous point, the minimizer $x_{\star}\in S$ of $f_{\mid S}$ exists and is unique. Let $x\in S$. There exists (by geodesic convexity of $S$) $v_x\in T_x\M$ such that $x_{\star}=\text{Exp}_x(v_x)$ and $c(t)=\text{Exp}_x(tv)\in S$ for all $t\in [0,1]$. From (\ref{eq.gmuconv}), we have
+\begin{eqnarray*}
+f(x_{\star})=f(\text{Exp}_x(v_x))&\ge&f(x)+\langle \grad f(x),v_x\rangle_x+\frac{\mu}{2}\|v_x\|_x^2\\
+&\ge& \inf_{v\in T_x\M}\left\{f(x)+\langle \grad f(x),v\rangle_x+\frac{\mu}{2}\|v\|_x^2\right\}\\
+&=&f(x)-\frac{1}{2\mu}\|\grad f(x)\|_x^2
+\end{eqnarray*}
+as the infinum is attained at the critical point of the quadratic form in $v$, namely $v=-\frac{1}{\mu}\grad f(x)$.
+\end{enumerate}
+\end{proof}
+The previous lemma allows to study the convergence of a simple version of Riemannian gradient descent applied to a function being geodesically strongly convex with a Lipschitz continuous gradient. 
+
+\par \medskip Let $f:\M \to \R$ be a differentiable and geodesically convex function on a complete manifold $\M$. Let $x_0\in \M$ and consider $S_0=\{x\in \M\mid f(x)\leq f(x_0)\}$. \\
+Assume $f$ has $L$-Lipschitz continuous gradient on a neighborhood of $S_0$ and $f_{\mid S_0}$ is geodesically $\mu$-strongly convex with $\mu>0$. We consider gradient descent, initialized at $x_0$, with exponential retraction and constant step-size $\frac{1}{L}$:
+$$x_{k+1}=\text{Exp}_{x_k}\left(-\frac{1}{L}\grad f(x_k)\right),~~k\ge 0.$$
+\begin{thm}
+With the same notation, $f$ admits a unique minimizer $x_{\star}$ and $\{x_k: k\ge 0\}$ converge to $x_{\star}$ at least linearly. Specifically, if $\kappa=L/\mu\ge 1$, for all $k\ge 0$, we have $x_k \in S_0$  and
+$$f(x_k)-f(x_{\star})\leq \left(1-\frac{1}{\kappa}\right)^{k}(f(x_0)-f(x_{\star}))~\text{ and }~\text{dist}(x_k,x_{\star})\leq \sqrt{1-\frac{1}{\kappa}}^k\sqrt{k}\text{dist}(x_0,x_{\star}).$$
+\end{thm}
+\begin{proof}
+
+\end{proof}
+
+\chapter{Examples of embedded submanifolds}
+
+
+
+Let us describe some of the most frequently occurring examples of embedded submanifolds.
+\section{Euclidean (sub)spaces}
+Let $\M$ be a linear subspace of a Euclidean space $(\E,\langle \cdot,\cdot\rangle)$. It can be viewed as a Riemannian manifold whose dimension is its dimension as a linear space and whose tangent spaces are the same:
+$$\forall x\in \M,~T_x\M=\M.$$
+The orthogonal projector from $\E$ to $T_x\M$ does not depend on $x$ (if $\M=\E$, the projector is the identity) and given a smooth function $f:\M \to \R$ with smooth extension $\bar{f}: U\to \R$ (with $U$ a neighborhood of $\M$ in $\E$), we have
+$$\grad f(x)=\text{Proj}_{\M}(\grad \bar{f}(x)).$$
+\begin{exm}
+Take $\E=\R^{n\times n}$ and $\M=\text{Sym}(n)$, defining a Riemannian submanifold. We have $\text{Proj}_{\M}(Z)=\frac{1}{2}(Z+Z^{T})$.
+\end{exm}
+On a Euclidean space $\E$, covariant derivatives $\frac{D}{dt}$ and Riemannian connection $\nabla$ are usual vector field derivatives, the Riemannian Hessian coincides with its Euclidean Hessian and the retraction $R_x(v)=x+v$ is a second-order retraction that is also the exponential map. The Hessian of $f$ is
+$$\forall x,v \in \M, ~\text{Hess}f(x)[v]=\text{Proj}_{\M}(\text{Hess}\bar{f}(x)[v]).$$
+\begin{rmk}
+A linear space can be endowed with a non-Euclidean Riemannian metric (i.e. that varies from point to point) in the following way: let $\M=\R^n$ and
+$$\langle u,v\rangle_x=u^{T}G(x)v,~~~G(x)\in \text{Sym}(n)$$
+such that $G(x)\succ 0$ varies smoothly with $x$.
+\end{rmk}
+\section{Stiefel manifold}
+Let $p\leq n$ and let us endow $\R^{n\times}$ with the standard inner product
+$$\langle U,V \rangle = \text{Tr}(U^{T}V).$$
+\begin{defn}[Stiefel manifold]
+The compact \emph{Stiefel manifold} is the set of (rectangular) matrices in $\R^{n\times p}$ with orthonormal columns in $\R^n$ w.r.t. the standard $\R^n$ inner product $\langle u,v\rangle =u^{T}v$. In other words,
+$$\Stif(n,p)=\{X\in \R^{n\times p} \mid X^{T}X=\text{I}_p\}.$$
+\end{defn}
+\begin{rmk}
+$\Stif(n,1) =S^{n-1}$. The elements of $\Stif(n,p)$ are called orthonormal matrices.
+\end{rmk}
+
+
+\begin{prop}
+$$\dim \Stif(n,p)=np-\frac{p(p+1)}{2}.$$
+\end{prop}
+\begin{proof}
+Let $h: \R^{n\times p} \to \text{Sym}(p): X\mapsto X^{T}X-\text{I}_p$. We have $\Stif(n,p)=h^{-1}(\{0\})$ and $h$ is differentiable at every $X \in \Stif(n,p)$ with
+$$Dh(X)[V]=X^{T}V+V^{T}X \in \text{Sym}(p)$$
+Let us show that $Dh(X)$ is surjective, so that one can conclude that $\text{rank}Dh(X)=\dim \text{Sym}(p)=\frac{p(p+1)}{2}$.
+Let $A\in \text{Sym}(p)$ and consider $V=\frac{1}{2}XA$. One can check easily that $Dh(X)[V]=A$ hence the wanted surjectivity. Finally,
+$$\dim \Stif(n,p)=\dim \R^{n\times p}-\dim \text{Sym}(p)=np-\frac{p(p+1)}{2}.$$
+\end{proof}
+Let us now explicit the tangent spaces. Before doing so, set the following
+$$\text{Skew}(p):=\{\Omega \in \R^{p\times p} \mid \Omega^{T}=-\Omega\}.$$
+\begin{prop}
+Let $X\in \Stif(n,p)$. 
+$$T_X\Stif(n,p)=\left\{X\Omega +X_{\bot}B \mid \Omega \in \text{Skew}(p), ~B \in \R^{(n-p)\times p} \right\}.$$
+\end{prop}
+\begin{proof}
+Let $X\in \Stif(n,p)$. By standard characterization with defining function, we know that
+$$T_X\Stif(n,p)=\ker Dh(X)=\{V\in \R^{n\times p} \mid X^{T}V+V^{T}X=0\}.$$
+Let us complete the orthonormal basis formed by the columns of $X$ by a matrix $X_{\bot} \in \R^{n\times(n-p)}$ such that $[X \mid X_{\bot}]\in \R^{n\times n}$ is orthogonal, i.e.
+$$X^{T}X=\text{I}_p~~,~~X^{T}_{\bot}X_{\bot}=\text{I}_{n-p}~~,~~X^{T}X_{\bot}=0.$$
+By invertibility of $[X \mid X_{\bot}]$, for any $V\in \R^{n\times p}$, there exists a unique $(\Omega,B)\in \R^{p\times p}\times \R^{(n-p)\times p}$ such that
+$$V=[X \mid X_{\bot}]\left[\begin{array}{c}\Omega \\B\end{array}\right]=X\Omega+X_{\bot}B.$$ Using this decomposition, one can show that
+$$V\in T_X\Stif(n,p)\iff 0=Dh(X)[V]=\Omega+\Omega^{T},$$
+which yields that $\Omega \in \text{Skew}(p)$.
+\end{proof}
+\begin{exm}
+$SO(n)=\{X\in \R^{n\times n} \mid X^{T}X=\text{I}_n,~\det(X)=1\}$. It defines an embedded submanifold of $\E=\R^{n\times n}$ of dimension $\frac{n(n-1)}{2}$. Indeed, 
+$$SO(n)=\text{St}(n,n)\cap(\det^{-1}(\{-1\}))^{c}.$$
+Since $(\det^{-1}(\{-1\}))^{c}$ is open, $SO(n)$ is an open subset of $\text{St}(n,n)$ hence an embedded submanifold with same dimension as $\text{St}(n,n)$ and with same tangent spaces:
+$$T_XSO(n)=\{V\in \R^{n\times n} \mid X^{T}V+V^{T}X=0\}.$$
+\end{exm}
+Let us now consider two popular retractions:
+\begin{itemize}
+\item The \emph{$Q$-factor retraction} is defined as
+$$R_X(V)=Q,~~~X \in \Stif(n,p),~V \in T_X \Stif(n,p),$$
+where $QR=X+V$ is a QR decomposition with $Q\in \Stif(n,p)$ and $R\in \R^{p\times p}$ being an upper triangular matrix with nonnegative diagonal coefficients. Since $X+V$ has full rank $p$ (given that $(X+V)^{T}(X+V)=I_p+V^TV \succ 0$), the QR decomposition is unique, which gives the well-definition of $R_X$. \\ Moreover, $R_X(0)=X$ and $R$ is smooth (resulting from a composition of smooth operations in the Gram-Schmidt algorithm). Besides, $DR_X(0)=\text{Id}$.
+\item The \emph{polar retraction} is defined as
+$$R_X(V)=(X+V)\left((X+V)^{T}(X+V)\right)^{-1/2}=(X+V)(\text{I}_p+V^{T}V)^{-1/2}.$$
+One has $R_X(0)=X$ and $R$ is smooth and $DR_X(0)=\text{Id}$. 
+\end{itemize}
+\begin{exm} \textbf{Metric polar projection retraction for Stiefel $\text{St}(n,p)$}~
+For $(X,V)\in T\text{St}(n,p)$, consider the thin SVD decomposition of $X+V$, i.e.
+$$X+V= U\Sigma W^{T},~~U\in \text{St}(n,p)~,~W\in O(p),$$
+with $\Sigma\in \R^{p\times p}$ a diagonal matrix with positive entries.
+\begin{itemize}
+\item $UW^{T}$ is the unique (metric) projection of $X+V$ to $\text{St}(n,p)$, i.e. 
+$$UW^{T}=\arg\min_{Y\in \text{St}(n,p)}\|X+V-Y\|^2.$$
+Indeed, thanks to the unitary invariance of the Frobenius norm and the bijectivity of $Y\mapsto YW$ on $\text{St}(n,p)$, we have
+\begin{eqnarray*}
+\inf_{Y\in \text{St}(n,p)}\|X+V-Y\|^2&=&\inf_{Y \in \text{St}(n,p)}\|U\Sigma W^{T}-Y\|^2=\inf_{Y\in \text{St}(n,p)}\|U\Sigma-YW\|^2\\
+&=&\inf_{Z\in \text{St}(n,p)}\|U\Sigma-Z\|^2=\inf_{Z\in \text{St}(n,p)}\left( \sum_{i=1}^{p}\|\sigma_iu_i-z_i\|^2\right)\\
+&=&\inf_{Z\in \text{St}(n,p)}\left(\sum_{i=1}^{p}\sigma_i^2-2\sigma_i\langle u_i,x_i\rangle +1\right)\\
+&\ge& \sum_{i=1}^{p}(\sigma_i^2-2\sigma_i+1)~\text{~by Cauchy--Schwarz inequality}.
+\end{eqnarray*}
+Equality holds if and only if $u_i=z_i$. The unique minimizer is given by $YW=U$, i.e. $Y=UW^{T}$. 
+\item For $(X,V) \in T\text{St}(n,p)$, define $R_X(V)=UW^{T}$. We have
+$$R_X(V)=(X+V)(I_p+V^TV)^{-1/2}.$$ Indeed, since $V\in T_X\text{St}(n,p)$, we have $X^{T}V+V^{T}X=0$ and
+\begin{eqnarray*}
+(I+V^TV)^{-1/2}&=&\left[ (X+V)^{T}(X+V)\right]^{-1/2}=(W\Sigma U^TU\Sigma W^T)^{-1/2}\\
+&=&(W\Sigma^2W^{T})^{-1/2}=W\Sigma^{-1}W^{T}.
+\end{eqnarray*}
+Hence $(X+V)(I+V^{T}V)^{-1/2}=U\Sigma W^{T} W\Sigma^{-1}W^{T}=UW^{T}$.
+\item Let us show that $R:T\text{St}(n,p)\to \text{St}(n,p)$ defined as above is a retraction. 
+First, $R$ is smooth since $(X,V)\mapsto (X+V)(I_p+V^TV)^{-1/2}$. Second, $R_X(0)=X$ and 
+$$\frac{d}{dt}[R_X(tV)]_{t=0}=V+X\frac{d}{dt}[(I_p+t^2V^TV)^{-1/2}]_{t=0}=0.$$
+\end{itemize}
+One can show that $R_X:T_X\text{St}(n,p)\to \text{St}(n,p)$ is not surjective.
+\end{exm}
+
+\begin{prop} Let $\text{Proj}_X$ be the orthogonal projector to $T_X\Stif(n,p)$. \\For $U \in \R^{n\times p}$, one has
+$$\text{Proj}_X(U)=(I-XX^{T})U+X\frac{X^TU-U^TX}{2}.$$
+\end{prop} 
+\begin{proof}
+One can show that
+$$N_X\Stif(n,p):=(T_X\Stif(n,p))^{\bot}=\{XA \mid A \in \text{Sym}(p)\}$$
+hence, for $U\in \R^{n\times p}$, the orthogonal projector verifies
+$U-\text{Proj}_X(U)=XA$ for some $A\in \text{Sym}(p)$. Moreover, we have $\text{Proj}_X(U)\in T_X\Stif(n,p)$, i.e.
+$$\text{Proj}_X(U)^{T}X+X^{T}\text{Proj}_X(U)=0.$$
+Combining both yields $U^{T}X+X^{T}U=2A$ therefore
+$$\text{Proj}_X(U)=U-X\frac{X^TU+U^TX}{2}=(I-XX^{T})U+X\frac{X^TU-U^TX}{2}.$$
+Moreover, the projection of $U\in \R^{p\times p}$ to the normal space is
+$$\text{Proj}_{X}^{\bot}(U)=Y\frac{1}{2}(X^TU+XU^T).$$
+\end{proof}
+Turning $\Stif(n,p)$ into a Riemannian submanifold of $\R^{n\times p}$ enables to use the expression of the orthogonal projector established before and get
+$$\grad f(X)=\grad \bar{f}(X)-X\text{sym}(X^{T}\grad \bar{f}(X))$$
+where $\text{sym}(M)=\frac{M+M^{T}}{2}$ and $\bar{f}$ is a smooth extension of $f$. However, other metrics can be used, such as the so-called \emph{canonical metric}.
+The Stiefel manifold becomes a Riemannian manifold by introducing an inner product on its tangent spaces. There are two natural inner products for tangent spaces of Stiefel manifolds: the Euclidean inner product and the canonical inner product.
+See \cite{edelman1998geometry}.
+\subsection{Euclidean inner product}
+Let $U,V\in T_X\Stif(n,p)$. The Euclidean inner product on $T_X\Stif(n,p)$ is defined as
+$$\langle U,V\rangle:=\text{tr}(U^{T}V).$$
+Let $V=XA+X_{\bot}B$ with $A\in \R^{p\times p}$ is anti-symmetric and $B\in \R^{(n-p)\times p}$ arbitrary. We can show that
+$$\langle V,V\rangle=\text{tr}(A^{T}A)+\text{tr}(B^TB)=\sum_{i>j}2a^{2}_{ij}+\sum_{i,j}b^{2}_{ij}.$$The Euclidean metric weighs the $A$ coordinates twice as much as the $B$ coordinates.
+[Absil,example 5.4.2, proof section 2.2.2 EAS]
+
+For $U$ a smooth vector field and $V\in T_X\Stif(n,p)$, the Levi--Civita connection is given by
+$$\nabla_VU=DU[V]-X\text{Sym}(X^{T}DU[V]).$$
+Let us compute the geodesics. Let $t\mapsto Y(t)$ a curve on $\Stif(n,p)$. Derivating twice the identity $Y^TY=\text{I}_p$ yields
+$$Y^{Y}\ddot{Y} +2\dot{Y}^T\dot{Y}+\ddot{Y}^TY=0.$$
+Since we look for a geodesic, $\ddot{Y}(t) \in (T_{Y(t)}\Stif(n,p))^{\bot}$ hence
+$$\ddot{Y}+Y(\dot{Y}^T\dot{Y})=0$$ Solving this differential equation yields
+$$Y(t)=\left(\begin{array}{cc}Y(0) & \dot{Y}(0)\end{array}\right) \exp \left(t\left(\begin{array}{cc}A & -S(0)\\I & A\end{array}\right) \right) I_{2p,p}e^{-At}$$
+where $A(t)=A(0)=Y^T\dot{Y}$ and $S(t)=\dot{Y}^{T}(t)\dot{Y}(t)$. 
+
+\begin{exm}\textbf{Riemannian Gradient Descent}
+We consider $\Stif(n,p)$ as a Riemannian submanifold of $\R^{n\times p}$ endowed with the usual Euclidean inner product $\langle X,Y\rangle=\text{Tr}(X^TY)$. \\ Consider
+$$f:\Stif(n,p)\to \R,~f(X)=\text{Tr}(X^TAX),~~A \in \text{Sym}_n(\R).$$
+Recall that the orthogonal projector $\text{Proj}_X:\R^{n\times p} \to T_X\Stif(n,p)$ is given by
+$$\text{Proj}_X(U)=U-X(X^TU+U^TX)/2.$$
+Remark that the computation of $\text{Proj}_X(U)$ is $O(np^2)$.  \\ Let us now compute the gradient of $f$. Consider the smooth extension $\bar{f}:X\in \R^{n\times p}\mapsto \text{Tr}(X^{T}AX)$. We have
+$$\grad \bar{f}(X)=2AX$$
+hence by projection on the Riemannian submanifold
+$$\grad f(X)=2AX-2X(X^TAX).$$
+\end{exm}
+\begin{exm}\textbf{Riemannian Hessian}
+Let $f:\Stif(n,p)\to \R$ be a smooth function and $\bar{f}$ be a smooth extension of $f$.  One can check (using the fact that if $S\in \text{Sym}(p),~\text{Proj}_X(XS)=0$) that
+$$\text{Hess}f(X)=\text{Proj}_X(\text{Hess}\bar{f}(X)[U])-\text{Proj}_X(U\text{sym}(X^T\grad \bar{f}(X))).$$
+Let us apply this to the cost function $f(X)=\text{Tr}(X^TAX),~~A\in \text{Sym}(n)$.
+Define $\bar{f}(X)=\text{Tr}(X^TAX)$ for $X\in \R^{n\times p}$. We have
+$$\grad \bar{f}(X)=2AX~,~\text{Hess}\bar{f}(X)[U]=2AU.$$
+Therefore
+$$\text{Hess}f(X)[U]=2\text{Proj}_X(AU)-\text{Proj}_X(UX^TAX).$$
+\end{exm}
+
+\subsection{Canonical inner product}
+ Contrary to the Euclidean inner product, it weighs the coordinates equally. Let us detail its construction. For $V=XA+X_{\bot}B$, we have $A=X^{T}Z$, which yields $XA=XX^{T}Z$. Thus
+$$(I-\frac{1}{2}XX^{T})V=V-\frac{1}{2}XX^{T}V=XA+X_{\bot}B-\frac{1}{2}XA=\frac{1}{2}XA+X_{\bot}B.$$
+We have
+$$\text{tr}(V^{T}(I-\frac{1}{2}XX^{T})V)=\frac{1}{2}\text{tr}(A^TA)+\text{tr}(B^TB)=\sum_{i>j}a^2_{ij}+\sum_{i,j}b^2_{ij}.$$
+It justifies the following definition.
+\begin{defn}
+The canonical inner product on $T_{X}\Stif(n,p)$ is defined for $U,V \in T_X\Stif(n,p)$ as
+$$g_c(U,V):=\text{tr}(U^{T}(I-\frac{1}{2}XX^T)V).$$
+\end{defn}
+Derived from the previous computations, we have
+$$g_c(U,V)=\frac{1}{2}\text{Tr}(A^TA)+\text{Tr}(B^TB).$$
+
+
+The following lemma shows that the normal space for the canonical metric coincides with the normal space for the embedded euclidean metric.
+\begin{lma}
+Let $X\in \Stif(n,p)$. The normal space $N_X$ defined as 
+$$N_X=\{N \in \R^{n\times p} \mid \forall U \in T_X\Stif(n,p), g_c(N,U)= 0\}$$
+is given by
+$$N_X=\{XS \mid S \in \text{Sym}\}.$$
+\end{lma}
+\begin{proof}Let $N\in N_X$ and $U \in T_X\Stif(n,p)$. 
+Remark that
+$g_c(N,U)=\rangle \mathcal{A}(N),U\langle_{\text{Frob}}$, where $\mathcal{A}:N\mapsto (I-\frac{1}{2}XX^T)N$. We already know that
+$$(T_X\Stif(n,p))^{\bot_{\text{Frob}}}=\{XS \mid S=S^T\}.$$
+Here
+$$\mathcal{A}(N)\in (T_X\Stif(n,p))^{\bot_{\text{Frob}}} \iff \mathcal{A}(N)=XS~\text{for some symmetric matrix }S.$$
+Let us solve $\mathcal{A}(N)=XS$. We use that $I-\frac{1}{2}XX^T$ is invertible and
+$$(I-\frac{1}{2}XX^T)^{-1}=I+XX^T.$$
+Hence
+$$N=(I+XX^T)(XS)=2XS.$$
+In other words, $N \in \{XS \mid S=S^{T}\}$. 
+\end{proof}
+
+
+Let us now compute the corresponding Riemannian gradient $\grad f(X)$ of any smooth function $f:\Stif(n,p)\to \R$ at $X\in \Stif(n,p)$. 
+\begin{prop}
+Let $f:\Stif(n,p)\to \R$ be a smooth function.  Let $X\in \Stif(n,p)$. The Riemannian gradient of $f$ associated with the canonical metric is
+$$\grad f(X)=\nabla f(X)-X[\nabla f(X)]^T X.$$
+\end{prop}
+\begin{proof}
+We have
+$$\forall V\in T_X\Stif(n,p),~\grad f(X)^T(I-\frac{1}{2}XX^{T}V=\underbrace{\nabla f(X)^{T}V}_{=df(X)[V]}.$$
+Taking the trace:
+$$\text{tr}\left(\left[(I-\frac{1}{2}XX^{T})\grad f(X)-\nabla f(X) \right]^TV\right)=0$$
+which means that $W:=(I-\frac{1}{2}XX^{T})\grad f(X)-\nabla f(X)$ is in $(T_X\Stif(n,p))^{\bot}$, i.e. of the form $W=XS$ for some symmetrix matrix $S$.
+From
+$$(I-\frac{1}{2}XX^T)\grad f(X)=\nabla f(X)+XS$$
+we deduce
+\begin{equation}\label{eq.grad1}
+\grad f(X)=\nabla f(X)+XX^{T}\nabla f(X)+2XS.
+\end{equation}
+But we also know that $\grad f(X)$ must be in $T_X\Stif(n,p)$, hence
+$X^{T}\grad f(X)$ is skew-symmetric:
+$$X^T\grad f(X)+(X^T\grad f(X))^T=0.$$
+Using Equation (\ref{eq.grad1}), we obtain
+$$X^T\grad f(X)=X^T\left[\nabla f(X)+XX^{T}\nabla f(X)+2XS\right]=2X^T\nabla f(X)+2S.$$
+This last expression is skew-symmetric if and only if and only if $S=-\text{sym}(X^T\nabla f(X))$. Plugging the expression of $S$ in  the previous $\grad f(X)$ expression gives the result.
+\end{proof}
+
+
+
+
+The Levi--Civita connection is explicit.
+\begin{prop}
+$$\nabla_{X^{\prime}}Y=\dot{Y}-\frac{1}{2}X(\dot{Y}^{T}X+X^{T}\dot{Y}).$$
+\end{prop}
+\begin{proof}
+$$\nabla_{X'}Y=\dot{Y}-\text{Proj}^{\bot}(\dot{Y}).$$
+We already know that
+$$\text{Proj}^{\bot}(\dot{Y})=-X\text{sym}(X^{T}\dot{Y}).$$
+\end{proof}
+
+
+
+
+Let us compute the geodesics. Recall that a curve $X(t)$ on $\Stif(n,p)$ is a geodesic if and only if
+$$\nabla_{\dot{X}(t)}\dot{X}(t)=0.$$
+Here the Levi--Civita connection is explicit and gives 
+$$0=\nabla_{\dot{X}}\dot{X}=\ddot{X}-\frac{1}{2}X(\ddot{X}^TX+X^{T}\dot{X}) \iff \ddot{X}=\frac{1}{2}X(\ddot{X}^TX+X^{T}\ddot{X})$$ with the condition that $X(t)X(t)^{T}=I$ for all $t$. 
+Let us write $X(0)=X_0$ and $\dot{X}(0)=V_0 \in T_{X_0}\Stif(n,p)$. We can uniquely write
+$$V_0=X_0\Omega_0+N_0$$
+with $\Omega_0:=X_0^TV_0 \in \R^{p\times p}$ skew-symmetrix, $N_0=V_0-X_0\Omega_0$ (normal component, i.e. $X_0^TN_0=0$).
+We can write the thin SVD decomposition of $N_0$ as
+$$N_0=U\Sigma W^{T},~U \in \Stif(n,r),~W\in \Stif(p,r),~\Sigma \in \R^{r\times r} \text{ diagonal}.$$
+
+Variational calculus minimization to $L=\int _0^{1}\sqrt{g_c(\dot{c(t)},\dot{c(t))_{c(t)}}}dt$ leads to the following geodesic equation, where $c(0)=X$:
+$$\ddot{c(t)}+\dot{c(t)}\dot{c(t)}^Tc(t)+c(t)((c(t)^T\dot{c(t)})^2+\dot{c(t)}^T\dot{c(t)})=0.$$
+With the same notations as before, (i.e. $V\in T_X\Stif(n,p)$ can be written as $V=X\Omega+X_{\bot}B$), an explicit formula is given by
+$$c(t)=[X \mid X_{\bot}]\exp \left( \left[\begin{array}{cc}\Omega & -B^{T} \\B & O_{n-p}\end{array}\right]t\right)\left[\begin{array}{c}\text{I}_p \\O_{(n-p)\times p}\end{array}\right].$$
+
+There is no explicit expression for the Riemannian logarithm on the Stiefel manifold.
+
+
+
+\section{Symmetric Positive Definite (SPD) Matrix Manifold}
+
+The set of symmetric positive definite matrices on size n, defined by
+$$\text{Sym}(n)^{+}:=\{X\in \text{Sym}(n) \mid X\succ 0\}$$
+is a convex and open set in $\text{Sym}(n)$ --the latter being a Euclidean space with inner product $\langle U,V \rangle =\text{Tr}(U^{T}V)=\text{Tr}(UV)$ -- hence is an open submanifold ad its tangent spaces are identified with $\text{Sym}(n)$. 
+
+Let us endow $\SPD$ with a Riemannian structure that makes it complete. We will provide two ways. 
+\subsection{Log--euclidean metric}
+See \cite{arsigny2007geometric}.
+Let us consider $\varphi: \SPD \to \text{Sym}(n): X\mapsto \log(X)$. Since $\varphi$ is smooth and invertible ($\varphi^{-1}(Y)=\exp(Y)$), it is a diffeomorphism. Let us pull-back the Euclidean metric from $\text{Sym}(n)$ to $\SPD$ so that we can define the following inner product on the tangent spaces $T_X\SPD=\text{Sym}(n)$:
+$$\langle U,V\rangle_X^{\log}:=\langle D\log(X)[U],D\log(X)[V]\rangle.$$
+\begin{itemize}
+\item[(i)] \textit{Geodesics}: Let $X,X'\in \SPD$. The unique minimizing geodesic connecting $X$ to $X'$ w.r.t. the Log-Euclidean metric is
+$$c(t)=\exp(\log(X)+t(\log(X')-\log(X))).$$
+\item[(ii)] \textit{Characterization of set geodesic convexity}: $S\subseteq \SPD$ is geodesically convex if and only if $\log(S)$ is convex in $\text{Sym}(n)$.
+\item[(iii)] \textit{Characterization of geodesic convexity for functions}: given a geodesically convex set $S$, a function $f:S\to \R$ is geodesically (strictly) convex if and only if $f\circ \exp$ is (strictly) convex on $\text{Sym}(n)$
+\end{itemize}
+\subsection{Affine invariant metric} See \cite{pennec2006riemannian}This more common metric on $\SPD$ is defined on $T_X\SPD$ as
+$$\langle U,V\rangle_X^{\text{aff}}:=\left\langle X^{-1/2}UX^{-1/2},X^{-1/2}VX^{-1/2}\right \rangle=\text{Tr}(X^{-1}UX^{-1}V).$$
+This metric is named after the so-called affine invariant property: for all invertible matrices $M\in \R^{n\times n}$, we have $MXM^{T}\succ 0$ and
+$$\langle MUM^{T},MVM^{T}\rangle_{MXM^T}^{\text{aff}}=\langle U,V\rangle_X^{\text{aff}}.$$
+In particular, it entails that if $c:[0,1]\to \SPD$ is a smooth curve, then its length is equal to the length of $t\mapsto Mc(t)M^{T}$, given that they have equal speed at each $t$. In a similar way, the length of $c$ is also equal to the length of $t\mapsto c(t)^{-1}$.
+
+The orthogonal projection from $\R^{p\times p}$ to $T_X\text{Sym}_p^{++}$ is given by $V\mapsto \text{Sym}(V)=\frac{1}{2}(V+V^{T})$. 
+Let $X,Y\in \mathcal{X}(\text{Sym}_p^{++})$ be two smooth vector fields. The Levi--Civita connection on $\text{Sym}_p^{++}$ is given by
+$$(\nabla_X Y)(\Sigma)=DY(\Sigma)[X]-\frac{1}{2}\left(X\Sigma^{-1}Y(\Sigma)+Y(\Sigma)\Sigma^{-1}X\right).$$
+The geodesic such that $c(0)=X$ and $c^{\prime}(0)=V$ is given by
+$$\text{Exp}_X(tV)=c(t)=X^{1/2}\exp\left(tX^{-1/2}VX^{-1/2}\right)X^{1/2},$$
+which is defined for all $t$, making the manifold $\SPD$ complete. 
+The exponential mapping on $\text{Sym}_p^{++}$ at $\Sigma$ is then
+$$\text{Exp}_{\Sigma}(V)=\Sigma^{1/2}\exp\left(\Sigma^{-1/2}\xi \Sigma^{-1/2}\right)\Sigma^{1/2}.$$
+The geodesic $\gamma$ with endpoints conditions $\gamma(0)=\Sigma_1$ and $\gamma(1)=\Sigma_2$ is given by
+$$\gamma(t)=\Sigma^{1/2}\left(\Sigma_1^{-1/2}\Sigma_2\Sigma_1^{-1/2}\right)^{t}\Sigma_1^{1/2}$$
+where $A^{t}=\exp(t\log(A))$ (here $\log(A)$ exists and is unique since $A\in \text{Sym}_p^{++}$). 
+The \emph{logarithmic map} of $\Sigma_2\in \text{Sym}_p^{++}$ at $\Sigma_1\in \text{Sym}_{p}^{++}$ is
+$$\log_{\Sigma_1}(\Sigma_2)=\Sigma_1^{1/2}\log(\Sigma_1^{-1/2}\Sigma_2\Sigma_1^{-1/2})\Sigma_1^{1/2}.$$
+which gives the following Riemannian distance (also invariant to affine transformation)
+$$d(\Sigma_1,\Sigma_2)=\left\|\log\left(\Sigma_2^{-1/2}\Sigma_1\Sigma_2^{-1/2}\right)\right\|_2.$$
+
+The parallel transport (see \cite{sra2015conic}) between $\Sigma_1$ and $\Sigma_2$ that moves $\xi\in T_{\Sigma_1}\text{Sym}_p^{++}$ to $T_{\Sigma_2}\text{Sym}_p^{++}$ while preserving the Riemanning metric is given by
+$$\mathcal{T}_{\Sigma_1,\Sigma_2}(\xi)=(\Sigma_2\Sigma_1^{-1})^{1/2}\xi\left((\Sigma_2\Sigma_1^{-1})^{1/2}\right)^{T}.$$
+
+The retraction
+$$R_{\Sigma}(\xi):=\Sigma+\xi+\frac{1}{2}\xi\Sigma^{-1}\xi$$
+defines a second-order retraction since
+$r^{\prime \prime}(t)= 0$, where $r(t)=R_{\Sigma}(t\xi)$. Moreover, it is a second-order approximation of the exponential mapping
+$$\text{Exp}_{\Sigma}(t\xi)=R_{\Sigma}(t\xi)+O(t^3).$$
+
+
+
+
+Moreover, we have the inverse:
+$$\text{Exp}_X(V)=X' \iff V= \text{Log}_X(X')= X^{1/2}\log(X^{-1/2}X'X^{-1/2})X^{1/2}.$$
+In particular,
+$$\text{dist}(X,X')=\|\log(X^{-1/2}X'X^{-1/2}\|_{\text{Frob}}.$$
+
+
+
+%%%%%%%%
+\chapter{Fisher--Rao geometry}
+
+\section{Statistical model}
+Let $\{x_i\mid i=1,\dots, n\} \in \mathcal{X}^n$ a sample of observation in the sample space $\mathcal{X}$, we often want to compute an estimation of a  parameter $\theta \in \E$, such parameter being a discriminant feature for a given problem of interest. 
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Federated Learning}
+
+From the definition given by Kairouz et al., \emph{federated learning} is a machine learning setting where multiple entities (called clients) collaborate in solving a machine learning (optimization) problem, under the coordination of a server or service provider. Each client's raw data is stored locally and not exchanged or transferred .Federated analytics works by running local computations over each device's data and only make the aggregated results available to product engineers. Federated optimization relies on several important ideas:
+\begin{itemize}
+\item Communication efficiency: reduced communication costs between the server and the clients.
+\item Data heterogeneity: clients can have different quantities of training data and statistically heterogeneous, i.e. a non-i.i.d. data partitioning in federated settings
+\item Computational constraints: hardware disparities between clients can lead to computational heteogeneity.
+\item Privacy and security: access to information from the data is only thgough aggregates.
+\item System complexity: stragglers, data storage and local computation. Server orchastration. 
+\end{itemize}
+\section{Framework}
+We want to minimize the objective function
+\begin{equation}\label{eq.FL}
+F(x)=\Esp_{i\sim P}[F_i(x)],~~\text{ where }F_i(x)=\Esp_{\xi\sim D_i}[f_i(x,\xi)]
+\end{equation}
+with 
+\begin{itemize}
+\item $x\in \R^d$ representing the parameter for the global model;
+\item $F_i: \R^d\to \R$ the local objective function at client $i$;
+\item $P$ being the distribution on the population of clients $\mathcal{I}$;
+\item $f_i(x,\xi)$ are the local loss functions (often the same across all clients) with local data distribution $D_i$ that can vary (data heterogeneity).
+\end{itemize}
+Remark that direct computation of $F(x)$ or $\nabla F(x)$ cannot be computed directly since there is only access to a random sample of the clients at each round of communication. \par \medskip
+Empirical risk minimization (ERM) paradigm applied to (\ref{eq.FL}) leads to considering
+$$F^{ERM}(x)=\sum_{i=1}^{M}p_iF_i^{ERM}(x), \text{ where } F_i^{ERM}(x)=\frac{1}{|D_i|}\sum_{\xi \in D_i}f_i(x,\xi)~\text{ and }\sum_{i=1}^{M}p_i=1$$
+with $M=|\mathcal{I}|$ denoting the total number of clients and $p_i$ being the relative weight of client $i$. ERM of the objective function across the union of all the local datasets can be achieved by setting $p_i=\frac{|D_i|}{\sum_{i=1}^{M}|D_i|}$. 
+
+\begin{itemize}
+\item Since the local datasets $D_i$ can have different distributions and size, the local objective functions $F_i(x)$ can be different and therefore have different local minima. Besides, the $D_i$ cannot be shared with the server or shuffled across clients.
+\item The total number of clients $M$ can be either very large and not well-defined. The client distribution $P$, the total number of clients $M$ or the total number of data samples $\sum_{i=1}^{M}|D_i|$ are not known \emph{a priori} before training starts.
+\end{itemize}
+
+\subsection{Federated averaging algorithm}Classical GD solving sets
+$$x^{(t+1)}=x^{(t)}-\eta_t\nabla F(x^{(t)}),~t\in \N.$$
+Under regularity assumptions, we can swap differentiation and expectation;
+$$\nabla F(x)=\nabla \Esp_{i\sim P}[F_i(x)]=\Esp_{i\sim P}[\nabla F_i(x)].$$
+Assume that at communication round $t$, only a finite subset $S^{(t)}$ of clients can connect to the server. Gradient descent update rule is then
+$$x^{(t+1)}=x^{(t)}-\eta_t \frac{1}{|S^{(t)}|}\sum_{i\in S^{(t)}}\nabla F_i(x^{(t)}).$$
+\emph{Stochastic approximation} can be used to replace the excat gradient of the local loss functions with an unbiased stochastic gradient $g_i(x^{(t)})$ such that
+$$\Esp_{\xi \sim D_i}[g_i(x^{(t)})]=\nabla F_i(x^{(t)}).$$
+To reduce communication costs, each active client updates its local model for $\tau_i$ steps 
+$$\Delta_i^{(t)}=x_i^{(t,\tau_i)}-x^{(t)}$$
+before the server aggregates them.\\
+McMahan et al. proposed \text{FedAvg}, a federated averaging algorithm dividing the training process into rounds and relying on two levels of optimization strategies: \text{ClientOpt} and \text{ServerOpt} (e.g. SGD). For every round $t\in \{0,1,\dots, T-1\}$:
+\begin{itemize}
+\item the server broadcasts the current global model $x^{(t)}$ to a random subset of clients $S^{(t)}$ uniformly sampled without replacement. For each sampled client $i\in S^{(t)}$, in parallel:
+\begin{itemize}
+\item initialization of the local model $x_i^{(t,0)}=x^{(t)}$
+\item for $k=0,\dots, \tau_i-1$: computation of local stochastic gradient $g_i(x_i^{(t,k)})$ and performation of local update
+$$x_i^{(t,k+1)}=\text{ClientOpt}(x_i^{(t,k)},g_i(x_i^{(t,k)}),\eta_{\text{client}},t).$$
+At the end, compute local model changes
+$$\Delta_i^{(t)}=x_i^{(t,\tau_i)}-x_i^{(t,0)}.$$
+\end{itemize}
+\item Aggregation of local changes
+$$\Delta^{(t)}=\sum_{i\in S^{(t)}}\frac{p_i \Delta_i^{(t)}}{\sum_{i\in S^{(t)}}p_i}$$
+\item Update global model: $$x^{(t+1)}=\text{ServerOpt}(x^{(t)},-\Delta^{(t)},\eta_{\text{server}},t).$$
+\end{itemize}
+\begin{rmk}~
+\begin{enumerate}
+\item Unlike local SGD procedures, \text{FedAvg} assume only a subset of clients participate in each training round and no assumption is made on homogeneity of local data nor on the number of local updates, which can vary from one client to another.
+\item Every client is allowed to have a different \text{ClientOpt} model (\emph{personalized model}).
+\item Regularization terms can be added to the objective function $F$ to promote sparsity or enforce various constraints (rank, monotonicity, etc.):
+$$\min_x F(x)+\Omega(x)$$
+with regularizer $\Omega(x)$ convex, possibly non-smooth, non-finite additive.
+\end{enumerate}
+\end{rmk}
+\subsection{Guidelines for developing practical algorithms}
+\begin{itemize}
+\item Specify the application setting
+\item Improve communication efficiency that can be done by combining the following methods:
+\begin{itemize}
+\item reducing the communication frequency by allowing local updates;
+\item reducing communication volume by compressing messages;
+\item reducing communication traffic at server by limiting the participating clients per round.
+\end{itemize}
+\item Design for data and computational heterogeneity
+\item Compatibility with system architectures and privacy-preserving protocols:
+\begin{itemize}
+\item monitoring client inactivity and using adequate sampling strategies;
+\item privacy protection and weighting scheme
+\end{itemize}
+\end{itemize}
+\section{Federated optimization theory}
+Let us introduce theoretical tools to analyse and prove federated optimization algorithm \text{FedAvg} mentioned before.
+\paragraph{Assumptions}: 
+\begin{description}
+\item[A.1] At any round $t$, at each client $i$ are computed $\tau$ local SGD steps with constant learning rate $\eta$:
+$$x_i^{(t,k+1)}=x_i^{(t,k)}-\eta g_i(x_i^{(t,k)}),~~k \in \{0,\dots, \tau-1\}$$
+where $g_i$ is the stochastic gradient.
+\item[A.2] $\Delta^{(t)}=x^{(t+1)}-x^{(t)}$
+\item[A.3] Finite number of clients: $\{1,2,\dots, M\}$ with uniform contribution of the global objective
+$$F(x)=\frac{1}{M}\sum_{i=1}^{M}F_i(x).$$
+\item[A.4] Each client participates at every round, i.e. $S^{(t)}=\{1,2,\dots, M\}$.
+\item[A.5] For each client $i,~F_i$ is convex and $L$-smooth.
+\item[A.6] Each client $i$ can query an unbiased stochastic gradient with $\sigma^2$-uniformly bounded variance in $\|\cdot\|_2$:
+$$\Esp\left[g_i(x^{(t,k)}_i) \mid x_i^{(t,k)}\right]=\nabla F_i(x_i^{(t,k)})~~;~~\Esp \left[\left\|g_i(x_i^{(t,k)})-\nabla F_i(x_i^{(t,k)})\right\|^2 \mid x_i^{(t,k)}\right]\leq \sigma^2.$$
+\item[A.7] The difference of $\nabla F_i(x)$ (local gradient) and $\nabla F(x)$ (global gradient) is $\zeta$-uniformly bound in $\|\cdot \|_2$:
+$$\max_i \sup_x\left\|\nabla F_i(x_i^{(t,k)})-\nabla F(x_i^{(t,k)})\right\|\leq \zeta.$$
+\end{description}
+
+Since in the federated learning setup, we have multiple local iterates from the clients, we introduce the following \emph{shadow sequence}:
+$$\bar{x}^{(t,k)}:=\frac{1}{M}\sum_{i=1}^{M}x_i^{(t,k)}$$
+so that
+$$\bar{x}^{(t,k+1)}=\bar{x}^{(t,k)}-\frac{\eta}{M}\sum_{i=1}^{M}g_i(x_i^{(t,k)}).$$
+In a convergence proof, we want to show that there exists a function (rate of convergence) $r(T)$ decreasing with $T$ such that
+$$\Esp\left[\frac{1}{\tau T}\sum_{t=0}^{T-1}\sum_{k=1}^{\tau}F(\bar{x}^{(t,k)}-F(x^{\star})\right]\leq r(T).$$
+Remark that at the end of each round, $\bar{x}^{(t,\tau)}=\bar{x}^{(t+1,0)}=x^{(t+1)}$, which means the bound on the poxy $\bar{x}$ also quantifies the convergence of the global model.
+\par \medskip
+To do so,
+\begin{enumerate}
+\item we first prove that progress is made at each round, i.e. that $\Esp \left[\frac{1}{\tau}\sum_{k=1}^{\tau}F(\bar{x}^{(t,k)})-F(x^{\star})\right]$ is bounded by some function plus an additional error term;
+\item second, we prove that all client iterates remain close to the global shadow sequence, i.e. in expectation, $\|x_i^{(t,k)}-\bar{x}^{(t,k)}\|^2$ is bounded;
+\item we finally use telescoping over $t$ to show that over $T$ rounds, significant progress towards the optimal value has been made.
+\end{enumerate}
+
+\newpage 
+\bibliographystyle{plain}
+
+\bibliography{biblio}
+
+
+
+
+\end{document}
+
+
+
+
+\section{Second-order optimization}
+Instead of computing Taylor expansion at the first order, one might want to go until the second-order term. Recall that $c: \R \to \M$ is a smooth curve and $f:\M \to \R$ is a smooth real-valued function on the manifold. Setting $g=f\circ c :\R \to \R$, we have
+$$g(t)=g(0)+tg^{\prime}(0)+\frac{t^2}{2}g^{\prime \prime}(0)+O(t^2)$$
+How to define an equivalent of the Hessian on a Riemannian manifold? In the Euclidean setting, the Hessian is the derivative of the gradient vector field. The standard differential of smooth functions on manifolds is not satisfactory, since the result does not in general belong to the same tangent space. It is the reason why we need to redefine a notion of derivative for vector fields named \emph{connection}. With a particular choice of connection (the \emph{Riemannian connection} or \emph{Levi--Civita connection}, we will eventually give meaning to
+$$f(c(t))=f(x)+t\langle \grad f(x),v\rangle_x+\frac{t^2}{2}\langle \text{Hess} f(x)[v],v\rangle_x +\frac{t^2}{2}\langle \grad f(x),c^{\prime \prime}(0)\rangle_x+O(t^3).$$
+Specifically, we want the Riemannian Hessian to be symmetric as a linear map from $T_x\M$ to $T_x\M$.
