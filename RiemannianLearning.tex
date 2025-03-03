@@ -97,7 +97,7 @@ where $Df(x)[v]=\lim_{t\to 0}\frac{f(x+tv)-f(x)}{t}$. Consequently, the gradient
 $$\forall v\in T_xS^{d-1},~Df(x)[v]=\langle \grad f(x),v\rangle_x.$$
 Here on the sphere $S^{d-1}$ we restric the inner product of $\R^d$ to $T_xS^{d-1}$. For Riemannian submanifolds, we will define the Riemannian gradient as the orthogonal projection of the classical gradient to the tangent spaces.
 \\ Recall that the Euclidean Hessian of $f$ at $x$ is the linear map $\Hess f(x):\mathcal{E}\to \mathcal{E}$ defined by
-$$\Hess f(x)[v]=D(\grad f)(x)[v]=\lim_{t\o 0}\frac{\grad f(x+tv)-\grad f(x)}{t}.$$
+$$\Hess f(x)[v]=D(\grad f)(x)[v]=\lim_{t\to 0}\frac{\grad f(x+tv)-\grad f(x)}{t}.$$
 Schwarz theorem implies that $\Hess f(x)$ is symmetric w.r.t. the inner product of $\mathcal{E}$.
 
 \chapter{Riemannian geometry}
@@ -1186,7 +1186,7 @@ Let $f$ be a differentiable and geodesically convex function on an open geodesic
 \end{itemize}
 \end{cor}
 \begin{proof}[Sketch of the proof]
-If $\grad f(x)=0$, from the previous Theorem, $f(x)\le f(y)$ for all $y$ in the domain of $f$. \\ The implication $1. \Rightarrow 2.$ follows from the fact that the domain of $f$ is open and Proposition \ref{}.
+If $\grad f(x)=0$, from the previous Theorem, $f(x)\le f(y)$ for all $y$ in the domain of $f$. \\ The implication $1. \Rightarrow 2.$ follows from the fact that the domain of $f$ is open and Proposition.
 \end{proof}
 Let us now give second order conditions of geodesic convexity.
 
@@ -1605,6 +1605,110 @@ $$C_{\theta}:=\Esp\left[(\vecto(\hat{\theta})-\vecto(\theta))(\vecto(\hat{\theta
 Remark that
 $$\text{Var}(\hat{\theta})=\text{Tr}(C_{\theta})=\Esp\left[ \|\vecto(\hat{\theta})-\vecto(\theta)\|_2^2\right]=:\text{MSE}(\hat{\theta},\theta).$$
 \end{rmk}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\chapter{SPD neural network}
+SPD matrices appear in various fields, such as medical imaging or visual recognition (pedestrian detection, face recognition) and arise naturally when considering covariance matrices.
+Since SPD matrices lie on non-Euclidean manifolds, standard Euclidean operations on SPD matrices do not take into account there geometric specificities, hence leading to several drawbacks, namely
+\begin{itemize}
+    \item \textbf{Swelling effect}: determinant values can increase following Euclidean averaging.
+    \item \textbf{Non-positive eigenvalues} can result from some operations.
+\end{itemize}
+Affine-invariant Riemannian metrics are expensive to compute.
+\section{Log-Euclidean geometry}
+In order to address the previous issues, \emph{log-euclidean metrics} provides a computationally-friendly framework which proceeds as follows:
+\begin{enumerate}
+    \item Computating the matrix logarithm of SPD matrices.
+    \item Performing Euclidean operations in the logarithm domain.
+    \item Mapping the results back to SPD space via the matrix exponential.
+\end{enumerate}
+Recall that the matrix exponential is defined by the following (absolutely convergent) power series:
+$$
+\exp(M)=\sum_{k=0}^{+\infty}\frac{M^k}{k!}.
+$$
+\begin{defn}
+    Let $S$ be an SPD matrix. The matrix logarithm is defined as
+    $$
+    \log(S)=P\log(D)P^T,
+    $$
+    where
+    $S=PDP^T$ is the eigenvalue decomposition of $S$, $D=\text{diag}(\lambda_i)$ contans the eigenvalues of $S$ and $\log(D)$ is a diagonal matrix with elements $\log(\lambda_i)$.
+\end{defn}
+Remark that $S=\exp(\log(S))$. 
+Since standard multiplication of SPD matrices does not commute, the \emph{log-euclidean multiplication} is defined as
+$$
+S_1 \circ S_2:=\exp(\log S_1 +\log S_2)
+$$
+which is makes it commutative and asociative. The inverse is defined as
+$$S{-1}:=\exp(-\log S).
+$$
+and scalar multiplication is defined as
+$$
+\lambda \circ S := \exp(\lambda \log S).
+$$
+In particular, such operations make SPD matrices behave as a vector space in the logarithmic domain.
+\par \medskip
+The geodesic distance between two SPD matrices $S_1$ and $S_2$ induced by the log-euclidean metric 
+is given by the Euclidean distance (for some euclidean norm $\|\cdot \|$) between the logarithms of the matrices:
+$$
+d_{LE}(S_1,S_2)=\|\log S_1 - \log S_2\|.
+$$
+When $\|\cdot \|$ is the Frobenius norm, one get
+$$
+d_{LE}(S_1,S_2)=\left ( \sum_{i,j=1}^{n}(\log S_1-\log S_1)^2_{ij}\right )^{1/2}.
+$$
+The geodesic connecting two SPD matrices $S_1$ and $S_2$ is given by
+$$
+\gamma(t)=\exp((1-t)\log S_1 +t \log S_2), t \in [0,1].
+$$
+Notice that, contrarily to affine-invariant metric, it involves no inversion and exponentiation of matrices, and only features linear interpolation in the logarithmic domain.
+\begin{defn}[Fréchet mean]
+Let $S_1, \dots, S_n$ be SPD matrices. Their \emph{Fréchet mean} is given by
+$$
+E_{LE}(S_1,\dots,S_n)=\exp\left ( \frac{1}{N}\sum_{i=1}^{N}\log S_i \right ).
+$$
+\end{defn}
+\begin{rmk}
+    With the same notations,
+    $$\det(E_{LE})=\left (\prod_{i=1}^{N}\det S_i \right )^{1/N},$$
+    which prevents the swelling effect.
+\end{rmk}
+
+\section{Architecture of SPD network}
+The article introduces a Riemannian deep learning architecture called SPDNet that processes SPD matrices while preserving the SPD structure across the layers. 
+The key components of this architecture are three different types of layers:
+\begin{itemize}
+    \item \textbf{BiMap} layer, analogous to convolutional layers, that maps SPD matrices to SPD matrices.
+    \item \textbf{ReEig} layer, analogous to ReLU activation function, which induces non-linearity.
+    \item \textbf{LogEig} layer, which maps SPD matrices to a flat Euclidean space to perform computations. 
+\end{itemize}
+\subsection{BiMap layer}
+The BiMap layer performs compression of the data while preserving its SPD structure thanks to the following bilinear mapping:
+$$
+X_k=f_b^{(k)}(X_{k-1},W_k):=W_kX_{k-1}W_k^T,
+$$
+where $X_{k-1} \in \text{Sym}_{d_k-1}^{+}$ is the input matrix at stage $k$, $W_k \in \R^{d_k\times d_{k-1}}_{\ast}$ is a learnable weight matrix in $\Stif(d_k,d_{k-1})$ in order to ensure boundedness on matrix distances. 
+In particular, the output $X_k$ belongs to $\text{Sym}_{d_k}^{+}$.
+\subsection{ReEig layer}
+\subsection{LogEig layer}
+\subsection{Other layers}
+
+\section{Backpropagation}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

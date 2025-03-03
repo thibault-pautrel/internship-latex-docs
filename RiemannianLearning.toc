@@ -38,9 +38,17 @@
 \contentsline {subsection}{\numberline {4.3.2}Affine invariant metric}{49}{}%
 \contentsline {chapter}{\numberline {5}Fisher--Rao geometry}{51}{}%
 \contentsline {section}{\numberline {5.1}Statistical model}{51}{}%
-\contentsline {chapter}{\numberline {6}Federated Learning}{53}{}%
-\contentsline {section}{\numberline {6.1}Framework}{53}{}%
-\contentsline {subsection}{\numberline {6.1.1}Federated averaging algorithm}{54}{}%
-\contentsline {subsection}{\numberline {6.1.2}Guidelines for developing practical algorithms}{55}{}%
-\contentsline {section}{\numberline {6.2}Federated optimization theory}{56}{}%
-\contentsline {paragraph}{Assumptions}{56}{}%
+\contentsline {chapter}{\numberline {6}SPD neural network}{53}{}%
+\contentsline {section}{\numberline {6.1}Log-Euclidean geometry}{53}{}%
+\contentsline {section}{\numberline {6.2}Architecture of SPD network}{54}{}%
+\contentsline {subsection}{\numberline {6.2.1}BiMap layer}{55}{}%
+\contentsline {subsection}{\numberline {6.2.2}ReEig layer}{55}{}%
+\contentsline {subsection}{\numberline {6.2.3}LogEig layer}{55}{}%
+\contentsline {subsection}{\numberline {6.2.4}Other layers}{55}{}%
+\contentsline {section}{\numberline {6.3}Backpropagation}{55}{}%
+\contentsline {chapter}{\numberline {7}Federated Learning}{57}{}%
+\contentsline {section}{\numberline {7.1}Framework}{57}{}%
+\contentsline {subsection}{\numberline {7.1.1}Federated averaging algorithm}{58}{}%
+\contentsline {subsection}{\numberline {7.1.2}Guidelines for developing practical algorithms}{59}{}%
+\contentsline {section}{\numberline {7.2}Federated optimization theory}{60}{}%
+\contentsline {paragraph}{Assumptions}{60}{}%

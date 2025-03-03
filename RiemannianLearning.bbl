@@ -1,17 +1,19 @@
 \begin{thebibliography}{1}
 
+\bibitem{amari2016information}
+Shun-ichi Amari.
+\newblock {\em Information geometry and its applications}, volume 194.
+\newblock Springer, 2016.
+
 \bibitem{arsigny2007geometric}
 Vincent Arsigny, Pierre Fillard, Xavier Pennec, and Nicholas Ayache.
-\newblock Geometric means in a novel vector space structure on symmetric
-  positive-definite matrices.
-\newblock {\em SIAM journal on matrix analysis and applications},
-  29(1):328--347, 2007.
+\newblock Geometric means in a novel vector space structure on symmetric positive-definite matrices.
+\newblock {\em SIAM journal on matrix analysis and applications}, 29(1):328--347, 2007.
 
 \bibitem{edelman1998geometry}
 Alan Edelman, Tom{\'a}s~A Arias, and Steven~T Smith.
 \newblock The geometry of algorithms with orthogonality constraints.
-\newblock {\em SIAM journal on Matrix Analysis and Applications},
-  20(2):303--353, 1998.
+\newblock {\em SIAM journal on Matrix Analysis and Applications}, 20(2):303--353, 1998.
 
 \bibitem{hager2006survey}
 William~W Hager and Hongchao Zhang.
@@ -25,8 +27,7 @@ Xavier Pennec, Pierre Fillard, and Nicholas Ayache.
 
 \bibitem{sra2015conic}
 Suvrit Sra and Reshad Hosseini.
-\newblock Conic geometric optimization on the manifold of positive definite
-  matrices.
+\newblock Conic geometric optimization on the manifold of positive definite matrices.
 \newblock {\em SIAM Journal on Optimization}, 25(1):713--739, 2015.
 
 \end{thebibliography}
