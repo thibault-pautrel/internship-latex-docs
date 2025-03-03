@@ -44,6 +44,7 @@
 \newcommand{\E}{\mathcal{E}}
 \newcommand{\Q}{\mathbb{Q}}
 \newcommand{\Prob}{\mathbb{P}}
+\newcommand{\vecto}{\text{vec}}
 \newcommand{\dist}{\mathrm{dist}}
 \newcommand \Esp {\mathbb{E}}
 \newcommand \Z {\mathbb{Z}}
@@ -1570,11 +1571,40 @@ $$\text{dist}(X,X')=\|\log(X^{-1/2}X'X^{-1/2}\|_{\text{Frob}}.$$
 \chapter{Fisher--Rao geometry}
 
 \section{Statistical model}
-Let $\{x_i\mid i=1,\dots, n\} \in \mathcal{X}^n$ a sample of observation in the sample space $\mathcal{X}$, we often want to compute an estimation of a  parameter $\theta \in \E$, such parameter being a discriminant feature for a given problem of interest. 
+Let $\{x_i\}_{i=1}^{n} \in \mathcal{X}$ a sample of observation in the sample space $\mathcal{X}$, we often want to compute an estimation of a  parameter $\theta \in \E$ (parameter space), such parameter being a discriminant feature for a given problem of interest. Usually $\E$ is a finite-dimensional linear space (say dimension $q$), endowed with the Euclidean inner product
+$$\langle \theta_1,\theta_2\rangle=\vecto(\theta_1)^T \vecto(\theta_2)$$
+and Euclidean distance
+$$d(\theta_1,\theta_2)=\|\vecto(\theta_1)-\vecto(\theta_2)\|_2$$
+where $\vecto:\E\to\R^{q}$ stacks its coordinates into a vector.
+\begin{defn}[Estimator, bias, unbiased estimator]
+An estimator $\hat{\theta}$ of $\theta$ is a mapping from $\mathcal{X}$ to $\E$ such that
+$$\{x_i\}_{i=1,\dots, n} \mapsto \hat{\theta}(\{x_i\}_{i=1}^{n}.$$
+The bias of $\hat{\theta}\in \E$ is
+$$b_{\theta}=\Esp\left[\vecto(\hat{\theta})-\vecto(\theta)\right]$$ and $\hat{\theta}$ is unbiased if $b_{\theta}= 0$. 
+\end{defn}
 
+Let us now assume that the sample of observation $\{x_i\}_{i=1}^{n} \in \mathcal{X}$ is a realization of a random variable $X$ with PDF $f$ parameterized by some unknown $\theta \in \E$, i.e.
+$$X\sim f(\cdot,\theta).$$
+\begin{defn}[Negative log-likelihood (NLL)]
+Let $\{x_i\}_{i=1}^{n} \in \mathcal{X}$ be a sample. Assume that for all $\theta \in \E,~f(\cdot,\theta)>0$. The negative log-likelihood function $\mathcal{L}:\E\to \R$ is defined as
+$$\mathcal{L}(\theta \mid \{x_i\}_{i=1}^{n}):=-\log f(\{x_i\}_{i=1}^{n},\theta).$$
+\end{defn}
+Since maximizing $\theta \mapsto f(\{x_i\}_{i=1}^{n}, \theta)$ is equivalent to minimizing $\theta \mapsto -\log  f(\{x_i\}_{i=1}^{n},\theta)$, the \emph{maximum likelihood estimator} (MLE) $\hat{\theta}^{\text{MLE}}$ is the minimizer of the negative log-likelihood function.
+\begin{defn}[MLE]
+With the same notations, 
+$$\hat{\theta}^{\text{MLE}}:=\arg \min_{\theta \in \E} \mathcal{L}(\theta \mid \{x_i\}_{i=1}^{n}).$$
+\end{defn}
 
+For information geometry, see \cite{amari2016information}. 
 
-
+\begin{defn}[Covariance matrix]
+Let $\hat{\theta}$ be an unbiased estimator of $\theta$. The covariance matrix $C_{\theta}\in \R^{q\times q}$ is the following symmetric, positive semi-definite matrix:
+$$C_{\theta}:=\Esp\left[(\vecto(\hat{\theta})-\vecto(\theta))(\vecto(\hat{\theta})-\vecto(\theta))^T\right].$$
+\end{defn}
+\begin{rmk}
+Remark that
+$$\text{Var}(\hat{\theta})=\text{Tr}(C_{\theta})=\Esp\left[ \|\vecto(\hat{\theta})-\vecto(\theta)\|_2^2\right]=:\text{MSE}(\hat{\theta},\theta).$$
+\end{rmk}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
