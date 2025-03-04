@@ -1610,6 +1610,8 @@ $$\text{Var}(\hat{\theta})=\text{Tr}(C_{\theta})=\Esp\left[ \|\vecto(\hat{\theta
 
 
 \chapter{SPD neural network}
+The main reference for this chapter is \cite{huang2017riemannian}. \\
+
 SPD matrices appear in various fields, such as medical imaging or visual recognition (pedestrian detection, face recognition) and arise naturally when considering covariance matrices.
 Since SPD matrices lie on non-Euclidean manifolds, standard Euclidean operations on SPD matrices do not take into account there geometric specificities, hence leading to several drawbacks, namely
 \begin{itemize}
@@ -1692,19 +1694,175 @@ $$
 where $X_{k-1} \in \text{Sym}_{d_k-1}^{+}$ is the input matrix at stage $k$, $W_k \in \R^{d_k\times d_{k-1}}_{\ast}$ is a learnable weight matrix in $\Stif(d_k,d_{k-1})$ in order to ensure boundedness on matrix distances. 
 In particular, the output $X_k$ belongs to $\text{Sym}_{d_k}^{+}$.
 \subsection{ReEig layer}
+This layer mimics and adapts the effect of standard ReLU activation function to rectify SPD matrices non-linearly thanks to some thresholding procedure. 
+More precisely, let $\varepsilon>0$ the rectification threshold value. At stage $k$, this layer is defined as
+$$
+X_k=f_{r}^{(k)}(X_{k-1}):=U_{k-1}\max(\varepsilon Id, \Sigma_{k-1})U_{k-1}^T,
+$$
+where as before $X_{k-1}=U_{k-1}\Sigma_{k-1}U_{k-1}^T$ and \[
+    \max(\varepsilon Id, \Sigma_{k-1})= \begin{cases}
+\Sigma_{k-1}(i,i), & \Sigma_{k-1}(i,i) > \epsilon, \\
+\epsilon, & \Sigma_{k-1}(i,i) \leq \epsilon.
+\end{cases}
+\]
+\begin{rmk}
+    The article also breifly mentions the possibility to adapt the standard sigmoid function to this setting in an analogous way as ReLU, namely by defining
+    $$X_k=U_{k-1}\sigma(\Sigma_{k-1})U_{k-1}^T,$$
+    where $\sigma(x)= \displaystyle \frac{1}{1+e^{-\alpha(x-\beta)}}$, with $\alpha>0, \beta>0$ to be chosen adequately so that the SPD structure remains preserved. 
+    This approach provides smooth non-linearity, as opposed to hard-thresholding (ReEig).
+\end{rmk}
 \subsection{LogEig layer}
-\subsection{Other layers}
+The main purpose of this layer is to flatten elements of the curved SPD manifold into some flat vector space using the matrix logarithm.
+Since the Log-Euclidean metric treats the matrix logarithm as an isometry between the SPD manifold and a flat Euclidean space, it makes it possible to use classical loss functions and fully connected layers, while preserving the Riemannian geometry.
+This layer is defined (with the same notations as before) in the following way at stage $k$:
+$$X_k=f_{l}^{(k)}(X_{k-1})=\log(X_{k-1})=U_{k-1}\log(\Sigma_{k-1})U_{k-1}^T.$$
+\par \medskip
+Another related approach is, as for the LogEig layer, to flatten the structure via the matrix logarithm, perform operations and this time to map the results back to the SPD manifold thanks to the matrix exponential.
+Given $X_1, \dots, X_N$ SPD matrices, we first compute their logarithms $\log(X_1), \dots, \log(X_N)$.
+It gives rise to the following layers:
+\begin{description}
+    \item[Fully connected layer] for a given SPD matrix $X$, we first compute its logarithm $\log(X)$, then we vectorize, which can be by stacking all the columns into a single column or stacking only the elements from the upper triangular part of $\log(X
+    )$, since it is symmetric:
+    $$x=\vecto(\log(X)).$$
+    Then, the FC layer applies the following transformation
+    $$y=Wx+b$$
+    where $W$ is the weight matrix. For classification tasks, the output of the FC layer is fed into a softmax layer that outputs class probabilities.
+
+    \item[Average Pooling layer] first, we perform average pooling in the Euclidean log-space, i.e.
+    $$\bar{L}:=\frac{1}{N}\sum_{i=1}^{N}\log(X_i).$$
+    Then we map it back to SPD:
+    $$\bar{X}=\exp(\bar{L}).$$
+    \item[Normalization layer] first, we compute the mean $\mu_L$ and variance matrix $V_{L}$ of the logarithms:
+    $$ 
+    \mu_L=\frac{1}{N}\sum_{i=1}^{N} \log(X_i) \text{ and } V_{L}=\frac{1}{N}\sum_{i=1}^{N}(\log(X_i)-\mu_L)^2.
+    $$
+    Since $V_L$ is symmetric, let us write its eigenvalue decomposition $V_L=Q\Lambda Q^T$ where $Q$ is orthogonal and $\Lambda$ diagonal with $V$'s eigenvalues as entries. 
+    Consider
+    $$V^{-1/2}=Q\Lambda^{-1/2}Q^T$$
+    and set
+    $$ \tilde{L}_i:=V^{-1/2}(\log(X_i)-\mu_L).$$
+    Finally, we map it back on SPD domain 
+    $$\tilde{X}_i=\exp(\tilde{L}_i).$$
+\end{description}
+
 
 \section{Backpropagation}
 
+The SPDNet model can be represented as a composition of layer functions
+$$f=f^{(l)}\circ f^{(l-1)}\circ \dots \circ f^{(1)},$$
+where $f^{(k)}$ is the function involved at the $k$-th layer and $l$ the number of layers.
+At each layer $k$, we have a weight matrix $W_k$, yielding weight parameter tuple 
+$$W=(W_l, W_{l-1},\dots,W_1).$$
+Let $\ell$ be the loss function for the final output layer. The loss of the $k$-th layer is given by
+$$L^{(k)}=\ell \circ f^{l}\circ \dots \circ f^{(k)}.$$
+In order to update the weights at each layer $k$, we need to compute $\frac{\partial L^{(k)}(X_{k-1},y)}{\partial W_k}$. The chain rule (backpropagation) gives
+\begin{equation}\label{eq.gradW} 
+\frac{\partial L^{(k)}(X_{k-1},y)}{\partial W_k}=\frac{\partial L^{(k+1)}(X_{k},y)}{\partial X_k}\frac{\partial f^{(k)}(X_{k-1})}{\partial W_k}.
+\end{equation}
+To compute the gradient w.r.t. the input data, we have similarly using chain rule
+$$
+\frac{\partial L^{(k)}(X_{k-1},y)}{\partial X_k}=\frac{\partial L^{(k+1)}(X_{k},y)}{\partial X_k}\frac{\partial f^{(k)}(X_{k-1})}{\partial X_{k-1}}
+$$
+where $y$ is the output and $X_k=f^{(k)}(X_{k-1})$.
+\subsection{BiMap layer}
+Recall that the BiMap layer bilinearly maps $X_k \in \text{Sym}_{d_k-1}^{+}$ to $X_k=f_{b}^{(k)}(X_{k-1},W_k)=W_kX_{k-1}W_k^T$ with 
+$W_k \in \Stif(d_{k-1},d_k)$. This latter constraint prevents the update to be solely using Equation (\ref{eq.gradW}) since it provides no guarantee that the updated weight remains on the Stiefel manifold.
+This is why the authors suggest using a Riemannian SGD algorithm on the Stiefel manifold.
+To do so, computation of the Riemannian gradient of $L^{(k)}$ at $W_k$, denotd by $\tilde{\nabla} L^{(k)}_{W_k}$, is performed, which consists at projecting the Euclidean gradient on the tangent space at $W_k$:
+$$\tilde{\nabla} L^{(k)}_{W_k}=\nabla L^{(k)}_{W_k}(\Id-W_k^T W_k) \in T_{W_k}\Stif(d_{k-1},d_k).$$
+Differentiating $X_k=W_kX_{k-1}W_k^T$ w.r.t. $W_K$ yields the Euclidean gradient
+$$\nabla L^{(k)}_{W_k}=2 \frac{\partial L^{(k+1)}}{\partial X_k}W_k X_{k-1}.$$
+Then, gradient descent is performed using a retraction $\Gamma$. Given the value $W_k^{t}$ at iteration $t$, we have
+$$W_{k}^{t+1}=\Gamma_{W_k^{t}}(-\lambda \tilde{\nabla}L_{W_k^t}),$$
+where $\lambda$ is the learning rate.
+
+\subsection{EIG-based layers}
+See \cite{ionescu2015matrix}
+The EIG operation on an SPD matrix $X$ is the eigen-decomposition 
+\begin{equation}\label{eq.eig}
+    X=U\Sigma U^T
+\end{equation}
+where $UU^T=\Id$ and $\Sigma$ is diagonal with positive entries $\sigma_i$. Since it is not an element-wise operation, backpropagation is not straightforward and must account for how small variations on $X$ affect $U$ and $\Sigma$. 
+
+Assuming a small variation $dX$ of $X$, we obtain using Equation (\ref{eq.eig})
+$$
+dX=dU\Sigma U^T+Ud\Sigma U^T+U\Sigma dU^T.
+$$
+
+The variations in the eigenvalues are given by the following result.
+\begin{prop}
+With the same notations,
+$$d\Sigma=(U^T dX U)_{\text{diag}}.$$
+\end{prop}
+\begin{proof}
+Differentiating $UU^T=\Id$ w.r.t. $U$ gives
+$$d(UU^T)=dU^T U +U^T dU =0$$
+hence $U^T U$ is skew-symmetric. 
+We have 
+\begin{eqnarray*}
+    U^T dX U&=& (U^T dU)\Sigma +d\Sigma +\Sigma (dU U)\text{  using } UU^T = \Id\\
+    &=& (U^T dU)\Sigma +d\Sigma -\Sigma(U^T dU) \text{  using that } U^TU \text{ is skew-symmetric}\\
+    &=&d\Sigma+\underbrace{[U^TdU,\Sigma]}_{\text{off-diagonal}}
+\end{eqnarray*}
+thus
+$$d\Sigma=(U^T dX U)_{\text{diag}}.$$
+\end{proof}
+
+The variations in the eigenvectors are given by the following result.
+\begin{prop}
+    With the same notations,
+    $$dU=2U(P^T \circ (U dX U)_{\text{sym}}),$$
+    where $\circ$ denotes the Hadamard element-wise product and the matrix $P$ is defined as
+    $$P_{ij}=\frac{1}{\sigma_i-\sigma_j}\mathds{1}_{i\neq j}.$$
+    \end{prop}
+    
+Remark that both ReEig and LogEig layers have a similar structure:
+$$X \mapsto Ug(\Sigma)U^T;$$
+for some function $g$ defined as
+\begin{itemize}
+    \item $g(\Sigma)=\max(\varepsilon \Id,\Sigma)$ for ReEig layer;
+    \item $g(\Sigma)=\log(\Sigma)$ for LogEig layer.
+\end{itemize}
+Our loss function $L$ depends on both $U$ and $\Sigma$. 
+The total variation in the loss $L$ is given by chain rule as
+$$dL=\frac{\partial L}{\partial U}:dU+\frac{\partial L}{\partial \Sigma}:d\Sigma.$$
+From the previous expressions, we have
+\begin{eqnarray*}
+    dL&=&\frac{\partial L}{\partial U}:2U(P^T \circ (U dX U)_{\text{sym}})+\frac{\partial L}{\partial \Sigma}:(U^T dX U)_{\text{diag}}\\
+    &=&\left [2U(P^T \circ (U^T \frac{\partial L}{\partial U})_{\text{sym}})U^T+U\left (\frac{\partial L}{\partial \Sigma} \right )_{\text{diag}} U^T\right ]: dX
+\end{eqnarray*}
+Since the previous equality holds for every $dX$, we finally obtain
+$$\frac{\partial L}{\partial X}=2U(P^T \circ (U^T \frac{\partial L}{\partial U})_{\text{sym}})U^T+U\left (\frac{\partial L}{\partial \Sigma} \right )_{\text{diag}}U^T.$$
+
+\begin{description}
+    \item[ReEig layer:]  since $g^{\prime}(\sigma)=\mathds{1}_{\sigma>\varepsilon}$, let us define
+     $$Q:=\text{diag}(q_1,\dots,q_d) \text{ where } q_i=\mathds{1}_{\sigma_i>\varepsilon}.$$
+    Therefore
+    $$\frac{\partial L}{\partial \Sigma}=QU^T \left ( \frac{\partial L}{\partial X} \right )_{\text{sym}} U.$$
+    On the other hand, standard derivation w.r.t. $U$ gives 
+    $$
+    \frac{\partial L}{\partial U}=2\left ( \frac{\partial L}{\partial X} \right )_{\text{sym}} U \max(\varepsilon \Id, \Sigma).
+    $$
+    \item[LogEig layer:] since $g^{\prime}(\Sigma)=\Sigma^{-1}$, we obtain
+    $$
+    \frac{\partial L}{\partial \Sigma}=\Sigma^{-1}U^T \left ( \frac{\partial L}{\partial X} \right )_{\text{sym}} U
+    $$
+    and
+    $$
+    \frac{\partial L}{\partial U}=2\left ( \frac{\partial L}{\partial X} \right )_{\text{sym}} U \log(\Sigma).
+    $$
+\end{description}
+
+\section{Riemannian batch normalization}
+
+In this section, we study how we can benefit from manifold geometry in order to introduce a Batch Normalization procedure that respects the geometry of the objects involved. 
+To do so, we resort to tools such as Fréchet mean, parallel transport and Riemannian gradient descent. 
+Such normalization layer can be integrated into existing SPD network architectures. 
+The main reference for this section is \cite{brooks2019riemannian}.
+\subsection{Riemannian structure}
 
 
-
-
-
-
-
-
+\subsection{Riemannian batch normalization algorithm}
 
 
 

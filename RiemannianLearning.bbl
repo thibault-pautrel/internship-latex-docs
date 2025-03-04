@@ -10,6 +10,11 @@ Vincent Arsigny, Pierre Fillard, Xavier Pennec, and Nicholas Ayache.
 \newblock Geometric means in a novel vector space structure on symmetric positive-definite matrices.
 \newblock {\em SIAM journal on matrix analysis and applications}, 29(1):328--347, 2007.
 
+\bibitem{brooks2019riemannian}
+Daniel Brooks, Olivier Schwander, Fr{\'e}d{\'e}ric Barbaresco, Jean-Yves Schneider, and Matthieu Cord.
+\newblock Riemannian batch normalization for spd neural networks.
+\newblock {\em Advances in Neural Information Processing Systems}, 32, 2019.
+
 \bibitem{edelman1998geometry}
 Alan Edelman, Tom{\'a}s~A Arias, and Steven~T Smith.
 \newblock The geometry of algorithms with orthogonality constraints.
@@ -19,6 +24,16 @@ Alan Edelman, Tom{\'a}s~A Arias, and Steven~T Smith.
 William~W Hager and Hongchao Zhang.
 \newblock A survey of nonlinear conjugate gradient methods.
 \newblock {\em Pacific journal of Optimization}, 2(1):35--58, 2006.
+
+\bibitem{huang2017riemannian}
+Zhiwu Huang and Luc Van~Gool.
+\newblock A riemannian network for spd matrix learning.
+\newblock In {\em Proceedings of the AAAI conference on artificial intelligence}, volume~31, 2017.
+
+\bibitem{ionescu2015matrix}
+Catalin Ionescu, Orestis Vantzos, and Cristian Sminchisescu.
+\newblock Matrix backpropagation for deep networks with structured layers.
+\newblock In {\em Proceedings of the IEEE international conference on computer vision}, pages 2965--2973, 2015.
 
 \bibitem{pennec2006riemannian}
 Xavier Pennec, Pierre Fillard, and Nicholas Ayache.

@@ -1,15 +1,15 @@
 # Fdb version 4
-["bibtex RiemannianLearning"] 0 "RiemannianLearning.aux" "RiemannianLearning.bbl" "RiemannianLearning" 1741017687.21462 -1
-  "./biblio.bib" 1741013154.54503 2606 5a862ca4cfb013729a1e9911f3e8f5be ""
+["bibtex RiemannianLearning"] 1741100795.27744 "RiemannianLearning.aux" "RiemannianLearning.bbl" "RiemannianLearning" 1741100795.37036 0
+  "./biblio.bib" 1741100795.10963 3536 557645a9a5d71b6496c0841473f5e4e4 ""
   "/usr/share/texlive/texmf-dist/bibtex/bst/base/plain.bst" 1292289607 20613 bd3fbfa9f64872b81ac57a0dd2ed855f ""
-  "RiemannianLearning.aux" 1741017686.97428 7889 4cd6d2edd83ddf8a91ad10dacc2fb064 "pdflatex"
+  "RiemannianLearning.aux" 1741095387.77562 8635 1979a7ea836a8946c467513f40666eeb "pdflatex"
   (generated)
   "RiemannianLearning.bbl"
   "RiemannianLearning.blg"
   (rewritten before read)
-["pdflatex"] 1741017686.26437 "/home/thibault/Documents/report/internship-latex-docs/RiemannianLearning.tex" "RiemannianLearning.pdf" "RiemannianLearning" 1741017687.21478 0
+["pdflatex"] 1741095387.07377 "/home/thibault/Documents/report/internship-latex-docs/RiemannianLearning.tex" "RiemannianLearning.pdf" "RiemannianLearning" 1741100795.37042 0
   "/etc/texmf/web2c/texmf.cnf" 1740991306.86338 475 c0e671620eb5563b2130f56340a5fde8 ""
-  "/home/thibault/Documents/report/internship-latex-docs/RiemannianLearning.tex" 1741017686.06825 117991 a39e24a2d8d30b8d43451bc67e90d183 ""
+  "/home/thibault/Documents/report/internship-latex-docs/RiemannianLearning.tex" 1741100755.33254 127777 f109ab7d61e386fe31f6b27167938b48 ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/jknappen/ec/tcrm1000.tfm" 1136768653 1536 e07581a4bb3136ece9eeb4c3ffab8233 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1246382020 1004 54797486969f23fa377b128694d548df ""
@@ -39,6 +39,8 @@
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmsy8.tfm" 1136768653 1120 8b7d695260f3cff42e636090a8002094 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmti10.tfm" 1136768653 1480 aa8e34af0eb6a2941b776984cf1dfdc4 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmti7.tfm" 1136768653 1492 86331993fe614793f5e7e755835c31c5 ""
+  "/usr/share/texlive/texmf-dist/fonts/tfm/public/doublestroke/dsrom10.tfm" 1136768653 452 168d896d9b2ead965bf08c9db69c947f ""
+  "/usr/share/texlive/texmf-dist/fonts/tfm/public/doublestroke/dsrom8.tfm" 1136768653 452 dc44cdd7c88ff2b15557f125edfc277b ""
   "/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb" 1248133631 34811 78b52f49e893bcba91bd7581cdc144c0 ""
   "/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb" 1248133631 32080 340ef9bf63678554ee606688e7b5339d ""
   "/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbxti10.pfb" 1248133631 36554 b67dc2cfa451409e100b3fcf5f506509 ""
@@ -60,6 +62,7 @@
   "/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti7.pfb" 1248133631 36607 d654cb3f2bc54f57509240071db3bffa ""
   "/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmex7.pfb" 1248133631 30457 bc0868ebece724ed7c3d37e3d9bff7bd ""
   "/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb" 1248133631 34694 ad62b13721ee8eda1dcc8993c8bd7041 ""
+  "/usr/share/texlive/texmf-dist/fonts/type1/public/doublestroke/dsrom10.pfb" 1136849748 17014 61891910dfe21ad76f9789fdafdd860e ""
   "/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii" 1461363279 71627 94eb9990bed73c364d7f53f960cc8c5b ""
   "/usr/share/texlive/texmf-dist/tex/generic/iftex/iftex.sty" 1644112042 7237 bdd120a32c8fdb4b433cf9ca2e7cd98a ""
   "/usr/share/texlive/texmf-dist/tex/generic/iftex/ifvtex.sty" 1572645307 1057 525c2192b5febbd8c1f662c9468335bb ""
@@ -135,6 +138,7 @@
   "/usr/share/texlive/texmf-dist/tex/latex/base/book.cls" 1705352648 23268 80674e17dbdc75804bd4d067e837600a ""
   "/usr/share/texlive/texmf-dist/tex/latex/base/ifthen.sty" 1705352648 5319 2b738d02ce36ada6dcdd9534940db0ee ""
   "/usr/share/texlive/texmf-dist/tex/latex/base/inputenc.sty" 1705352648 5048 425739d70251273bf93e3d51f3c40048 ""
+  "/usr/share/texlive/texmf-dist/tex/latex/doublestroke/Udsrom.fd" 1137110062 211 101be7da01334f0b54b41fbe634f1ce4 ""
   "/usr/share/texlive/texmf-dist/tex/latex/doublestroke/dsfont.sty" 1137110062 230 7bc61880b468bfd38aedc173be7c3486 ""
   "/usr/share/texlive/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty" 1579991033 13886 d1306dcf79a944f6988e688c1785f9ce ""
   "/usr/share/texlive/texmf-dist/tex/latex/float/float.sty" 1137110151 6749 16d2656a1984957e674b149555f1ea1d ""
@@ -168,10 +172,10 @@
   "/usr/share/texmf/web2c/texmf.cnf" 1707919699 40399 f2c302f7d2af602abb742093540a5834 ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1740991319.81373 5472669 54eaf61a88b6b7896ebd0dac973cb29c ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1740991334 8214197 27ac70d291749d2cfa4d8d1df8c3f477 ""
-  "RiemannianLearning.aux" 1741017686.97428 7889 4cd6d2edd83ddf8a91ad10dacc2fb064 "pdflatex"
-  "RiemannianLearning.bbl" 1741017032.28655 1342 0d5fc7aac1660116ee59854d86f20c20 "bibtex RiemannianLearning"
-  "RiemannianLearning.tex" 1741017686.06825 117991 a39e24a2d8d30b8d43451bc67e90d183 ""
-  "RiemannianLearning.toc" 1741017686.97428 4105 dab4814567095eee70cfac31eac79e16 "pdflatex"
+  "RiemannianLearning.aux" 1741095387.77562 8635 1979a7ea836a8946c467513f40666eeb "pdflatex"
+  "RiemannianLearning.bbl" 1741100795.35764 2113 783e4a8c0ba8dc13c28b0d5083b39626 "bibtex RiemannianLearning"
+  "RiemannianLearning.tex" 1741100755.33254 127777 f109ab7d61e386fe31f6b27167938b48 ""
+  "RiemannianLearning.toc" 1741095387.77662 4425 eed48d9210d82af3e64023dd55356ede "pdflatex"
   (generated)
   "RiemannianLearning.aux"
   "RiemannianLearning.log"
