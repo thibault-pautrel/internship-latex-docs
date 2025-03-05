@@ -43,6 +43,7 @@
 \contentsline {section}{\numberline {5.2}Riemannian structure}{53}{}%
 \contentsline {subsection}{\numberline {5.2.1}Riemannian metric}{53}{}%
 \contentsline {subsection}{\numberline {5.2.2}Levi--Civita connection}{54}{}%
+\contentsline {subsection}{\numberline {5.2.3}Geodesics, exponential and logarithmic maps, Riemannian distance}{54}{}%
 \contentsline {chapter}{\numberline {6}SPD neural network}{55}{}%
 \contentsline {section}{\numberline {6.1}Log-Euclidean geometry}{55}{}%
 \contentsline {section}{\numberline {6.2}Architecture of SPD network}{56}{}%
@@ -51,16 +52,17 @@
 \contentsline {subsection}{\numberline {6.2.3}LogEig layer}{57}{}%
 \contentsline {section}{\numberline {6.3}Backpropagation}{58}{}%
 \contentsline {subsection}{\numberline {6.3.1}BiMap layer}{59}{}%
-\contentsline {subsection}{\numberline {6.3.2}EIG-based layers}{60}{}%
+\contentsline {subsection}{\numberline {6.3.2}EIG-based layers}{59}{}%
+\contentsline {paragraph}{Context}{59}{}%
+\contentsline {paragraph}{Idea}{60}{}%
 \contentsline {paragraph}{Method}{60}{}%
-\contentsline {section}{\numberline {6.4}Riemannian batch normalization}{62}{}%
-\contentsline {subsection}{\numberline {6.4.1}Riemannian structure}{62}{}%
-\contentsline {paragraph}{Karcher flow algorithm}{63}{}%
-\contentsline {subsection}{\numberline {6.4.2}Riemannian batch normalization algorithm}{63}{}%
-\contentsline {subsection}{\numberline {6.4.3}Backpropagation}{64}{}%
-\contentsline {chapter}{\numberline {7}Federated Learning}{65}{}%
-\contentsline {section}{\numberline {7.1}Framework}{65}{}%
-\contentsline {subsection}{\numberline {7.1.1}Federated averaging algorithm}{66}{}%
-\contentsline {subsection}{\numberline {7.1.2}Guidelines for developing practical algorithms}{67}{}%
-\contentsline {section}{\numberline {7.2}Federated optimization theory}{68}{}%
-\contentsline {paragraph}{Assumptions}{68}{}%
+\contentsline {section}{\numberline {6.4}Riemannian batch normalization}{63}{}%
+\contentsline {subsection}{\numberline {6.4.1}Riemannian structure}{63}{}%
+\contentsline {paragraph}{Karcher flow algorithm}{64}{}%
+\contentsline {subsection}{\numberline {6.4.2}Riemannian batch normalization algorithm}{64}{}%
+\contentsline {chapter}{\numberline {7}Federated Learning}{67}{}%
+\contentsline {section}{\numberline {7.1}Framework}{67}{}%
+\contentsline {subsection}{\numberline {7.1.1}Federated averaging algorithm}{68}{}%
+\contentsline {subsection}{\numberline {7.1.2}Guidelines for developing practical algorithms}{69}{}%
+\contentsline {section}{\numberline {7.2}Federated optimization theory}{70}{}%
+\contentsline {paragraph}{Assumptions}{70}{}%

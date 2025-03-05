@@ -1658,12 +1658,28 @@ The proof relies on the stochastic representation of $x=\sqrt{Q}\Sigma^{1/2}u$ o
 $$D\log|\Sigma|[\xi]=\text{Tr}(\Sigma^{-1}\xi)~\text{ and }~D(\Sigma^{-1})[\xi]=-\Sigma^{-1}\xi\Sigma^{-1}.$$
 \end{proof}
 In the remainder of the chapter, we will rather use the generic metric (general affine-invariant metric):
-$$\langle \xi, \eta\rangle_{\Sigma}=:g_{\Sigma}(\xi,\eta)=\text{Re}\left[\alpha \text{Tr}(\Sigma^{-1}\xi\Sigma^{-1}\eta)+\beta \text{Tr}(\Sigma^{-1}\xi)\text{Tr}(\Sigma^{-1}\eta) \right]$$
+\begin{equation} \label{eq.aimetric}
+\langle \xi, \eta\rangle_{\Sigma}=:g_{\Sigma}(\xi,\eta)=\text{Re}\left[\alpha \text{Tr}(\Sigma^{-1}\xi\Sigma^{-1}\eta)+\beta \text{Tr}(\Sigma^{-1}\xi)\text{Tr}(\Sigma^{-1}\eta) \right]
+\end{equation}
 with $\alpha>0$ and $\beta>-\alpha/p$ (to ensure the positive definite property of the corresponding inner product).
 \begin{rmk} The case where $\alpha=1$ and $\beta=0$ coincides with the FIM of the Gaussian distribution.
 \end{rmk}
 
 \subsection{Levi--Civita connection}
+The Levi--Civita connection on $\mathcal{H}_p^{++}$ associated with the general affine-invariant metric (\ref{eq.aimetric}) is explicit.
+\begin{thm}[Levi--Civita connection] Let $\Sigma \in \mathcal{H}_p^{++}$.
+For all $\xi,\eta \in \mathcal{X}(\mathcal{H}_p^{++})$,
+$$\nabla_{\xi}\eta=D\eta[\xi]-\text{Herm}(\eta\Sigma^{-1}\xi).$$
+\end{thm}
+\begin{proof}[Sketch of the proof]
+Invariance properties of the trace operator are used, alongside computations of differential involved in the Koszul formula.
+\end{proof}
+\begin{rmk}
+The Levi--Civita connection does not depend on $\alpha$ nor $\beta$, hence remains the same for all C-CES distributions.
+\end{rmk}
+\subsection{Geodesics, exponential and logarithmic maps, Riemannian distance}
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1793,17 +1809,6 @@ It gives rise to the following layers:
     $$\bar{L}:=\frac{1}{N}\sum_{i=1}^{N}\log(X_i).$$
     Then we map it back to SPD:
     $$\bar{X}=\exp(\bar{L}).$$
-    \item[Normalization layer] first, we compute the mean $\mu_L$ and variance matrix $V_{L}$ of the logarithms:
-    $$ 
-    \mu_L=\frac{1}{N}\sum_{i=1}^{N} \log(X_i) \text{ and } V_{L}=\frac{1}{N}\sum_{i=1}^{N}(\log(X_i)-\mu_L)^2.
-    $$
-    Since $V_L$ is symmetric, let us write its eigenvalue decomposition $V_L=Q\Lambda Q^T$ where $Q$ is orthogonal and $\Lambda$ diagonal with $V$'s eigenvalues as entries. 
-    Consider
-    $$V^{-1/2}=Q\Lambda^{-1/2}Q^T$$
-    and set
-    $$ \tilde{L}_i:=V^{-1/2}(\log(X_i)-\mu_L).$$
-    Finally, we map it back on SPD domain 
-    $$\tilde{X}_i=\exp(\tilde{L}_i).$$
 \end{description}
 
 
@@ -1830,6 +1835,8 @@ $$
 \frac{\partial L^{(k)}(X_{k-1},y)}{\partial X_k}=\frac{\partial L^{(k+1)}(X_{k},y)}{\partial X_k}\frac{\partial f^{(k)}(X_{k-1})}{\partial X_{k-1}}
 $$
 where $y$ is the output and $X_k=f^{(k)}(X_{k-1})$.
+Denote by $A:B=\text{Tr}(A^{T}B)$ the matrix inner product. Recall that for a generic differentiable function $\varphi: \R^{m\times n}\to \R$, one have the following first-order Taylor expansion:
+$$\varphi(X+dX)=f(X)+\frac{\partial \varphi}{\partial X}: dX+O(\|dX\|^2).$$
 \subsection{BiMap layer}
 Recall that the BiMap layer bilinearly maps $X_k \in \text{Sym}_{d_k-1}^{+}$ to $X_k=f_{b}^{(k)}(X_{k-1},W_k)=W_kX_{k-1}W_k^T$ with 
 $W_k \in \Stif(d_{k-1},d_k)$. This latter constraint prevents the update to be solely using Equation (\ref{eq.gradW}) since it provides no guarantee that the updated weight remains on the Stiefel manifold.
@@ -1851,13 +1858,28 @@ The EIG operation on an SPD matrix $X$ is the eigen-decomposition
 where $UU^T=\Id$ and $\Sigma$ is diagonal with positive entries $\sigma_i$. Since it is not an element-wise operation, backpropagation is not straightforward and must account for how small variations on $X$ affect $U$ and $\Sigma$. 
 
 
+\paragraph{Context}
+
+We have a function $\Omega \mapsto L(\Omega)$ where $\Omega$ depends on $X\in \text{Sym}_d^{+}$ through an eigen-decomposition.  
+Let $X=U\Sigma U^{T}$ where $U^TU=\Id$ and $\Sigma=\text{diag}(\sigma_1,\dots, \sigma_d)$, with $\sigma_i>0$. 
+We assume that
+$$\Omega=\Omega(X)=Uf(\Sigma)U^T$$ for some scalar function $f$. 
+For backpropagation, how do we compute $\frac{\partial L}{\partial X}$  given $\frac{\partial L}{\partial \Omega}$?
+
+\paragraph{Idea}
+The chain rule states that
+$$dL=\frac{\partial L}{\partial U}: dU+\frac{\partial L}{\partial \Sigma}:d\Sigma.$$
+The next step is to substitue the expressions for $dU$ and $d\Sigma$ in terms of $dX$. To do this, define the following forward operator:
+$$\mathcal{F}: dX\mapsto (dU,d\Sigma).$$
+We want to determine its adjoint operator $\mathcal{F}^{\ast}$ that verifies
+$$\left(\frac{\partial L}{\partial U},\frac{\partial L}{\partial \Sigma}\right): \mathcal{F}(dX)=\mathcal{F}^{\ast}\left(\frac{\partial L}{\partial U},\frac{\partial L}{\partial \Sigma}\right):dX$$ so that we obtain our quantity of interest
+$$\frac{\partial L}{\partial X}=\mathcal{F}^{\ast}\left(\frac{\partial L}{\partial U},\frac{\partial L}{\partial \Sigma}\right).$$
 
 \paragraph{Method}
+
 Let $\mathcal{F}$ be the functional that describes the variation of the upper layer variables w.r.t. the lower layer variables:
 $$dX_k=\mathcal{F}(dX_{k-1}).$$
-Here, with the same notation of in Equation (\ref{eq.eig}), $\mathcal{F}: dX \mapsto (dU,d\Sigma)$.
-\\ Denote by $A:B=\text{Tr}(A^{T}B)$ the matrix inner product. Recall that for a generic differentiable function $\varphi: \R^{m\times n}\to \R$, one have the following first-order Taylor expansion:
-$$\varphi(X+dX)=f(X)+\frac{\partial \varphi}{\partial X}: dX+O(\|dX\|^2).$$
+Here, with the same notation of in Equation (\ref{eq.eig}), $\mathcal{F}: dX \mapsto (dU,d\Sigma)$.\\
 The idea is to (i) project the variation $dX$ onto an admissible space and (ii) transfer the projection onto the derivative to obtain the projected gradient, by considering the adjoint operator $\mathcal{F}^{\ast}$ of $\mathcal{F}$. Namely,
 \[
 \frac{\partial L^{(k+1)}}{\partial X_k}: dX_k =\frac{\partial L^{(k+1)}}{\partial X_k}: \mathcal{F}(dX_{k-1})= \mathcal{F}^{\ast}\left(\frac{\partial L^{(k+1)}}{\partial X_k} \right) : dX_{k-1}
@@ -1914,7 +1936,7 @@ Combining the previous expressions , we have
     \frac{\partial{L^{(k)}}}{\partial X_{k-1}}&=&\frac{\partial L^{(k^{\prime})}}{\partial U}:2U(P^T \circ (U dX U)_{\text{sym}})+\frac{\partial L^{(k^{\prime})}}{\partial \Sigma}:(U^T dX U)_{\text{diag}}\\
     &=&\left [2U\left(P^T \circ \left(U^T \frac{\partial L^{(k^{\prime})}}{\partial U}\right)_{\text{sym}}\right)U^T+U\left (\frac{\partial L^{(k^{\prime})}}{\partial \Sigma} \right )_{\text{diag}} U^T\right ]: dX
 \end{eqnarray*}
-Since the previous equality holds for every $dX$, we finally obtain
+Since the previous equality holds for every $dX$, we finally obtain (see Proposition 2 in \cite{ionescu2016trainingdeepnetworksstructured}),
 $$\frac{\partial L^{(k)}}{\partial X_{k-1}}=2U(P^T \circ (U^T \frac{\partial L^{(k^{\prime})}}{\partial U})_{\text{sym}})U^T+U\left (\frac{\partial L^{(k^{\prime})}}{\partial \Sigma} \right )_{\text{diag}}U^T.$$
 
 \begin{description}
@@ -1948,7 +1970,28 @@ $$\frac{\partial L^{(k)}}{\partial X_{k-1}}=2U(P^T \circ (U^T \frac{\partial L^{
     $$
 \end{description}
 
-
+More generally (see section 4.2 of \cite{brooks2019riemannian}), we considering layers of the form $P\mapsto X=f(P)$, with $f$ being a monotonous non-linear function, the output gradient $\frac{\partial L^{(k)}}{\partial P}$ is given by the following result.
+\begin{prop} \label{prop.eig.func}
+If $P=U\Sigma U^T \mapsto X=Uf(\Sigma) U^T$, then
+$$\frac{\partial L^{(k)}}{\partial P}= U\left( L \odot (U^T\left(\frac{\partial L^{(k+1)}}{\partial X}\right) U )\right)U^T,$$
+where $L$ is the Loewner matrix defined by
+$$L_{ij}=\frac{f(\sigma_i)-f(\sigma_j)}{\sigma_i-\sigma_j}\mathds{1}{\sigma_i\neq \sigma_j}+f^{\prime}(\sigma_i)\mathds{1}_{\sigma_i=\sigma_j}.$$
+\end{prop}
+\begin{proof}[Sketch of the proof]
+Let $P\in \text{Sym}_{d}^{++}$ be decomposed as $P=U\Sigma U^T$ with $U^T U =\Id$ and $\Sigma=\text{diag}(\sigma_1,\dots, \sigma_d)$ with $\sigma_i>0$. We have
+$$X=Uf(\Sigma)U^{T},~~\text{where} f(\Sigma)=\text{diag}(f(\sigma_1),\dots, f(\sigma_d)).$$
+To prove the wanted result, it suffices to show that
+$$\frac{\partial L}{\partial X}:dX=U\left(L\circ (U^T\frac{\partial L}{\partial X} U)\right) U^T$$
+where $L$ is the Loewner matrix defined above.
+\\
+We have
+$$d(f(\Sigma))=f^{\prime}(\Sigma)\odot d\Sigma~;~d\Sigma=(U^TdP U)_{\text{diag}}~\text{ and }~dU=2U\left(\Psi^{T}\odot (U^T dP U)_{\text{sym}}\right)$$
+with $\Psi_{ij}=\frac{1}{\sigma_i-\sigma_j}\mathds{1}_{i\neq j}$. 
+Then, by the product rule
+$$dX=(dU)f(\Sigma) U^T+Ud(f(\Sigma))U^T+Uf(\Sigma)dU^{T}.$$
+It remains to show, using the trace properties and the previous expressions, that
+$$\frac{\partial L}{\partial X}:dX=\text{Tr}\left((dX)^T\frac{\partial L}{\partial X}\right) = U\left(L\odot (U^T\frac{\partial L}{\partial X}U)\right)U^T : dP.$$
+\end{proof}
 
 \section{Riemannian batch normalization}
 
@@ -2029,7 +2072,18 @@ $$\tilde{P}_i^{c}=G_S^{-1/2}\tilde{P}_iG_S^{-1/2}.$$
 $$\tilde{P}_i^{b}=G^{1/2}\tilde{P}_i^{c}G^{1/2}.$$
 \end{enumerate}
 \end{description}
-\subsection{Backpropagation}
+Recall that batchnorm bias parameter $G$ is learnable.
+During training mode, at each processed batch:
+\begin{enumerate}
+\item We compute batch mean $G_B$ via Karcher flow algorithm.
+\item We perform the \emph{forward} pass by centering around $G_B$ and biasing by $G$.
+\item To update $G$, we \emph{backpropagate} through the network by computing the gradient of the loss function w.r.t. $G$ and applying Riemannian gradient descent to update $G$ while staying on the manifold. 
+\end{enumerate}
+For this last backpropagation part, the Euclidean gradient $\nabla^{\text{eucl}}$ is computed using the chain rule result of Proposition  \ref{prop.eig.func}, since the forward mapping involves non-linear monotonic SPD functions like $G\mapsto G^{1/2}$ or $G\mapsto G^{-1/2}$. Then, this Euclidean gradient is projected onto the tangent space at $G$ via
+$$\Pi_{T_G\text{Sym}_d^{+}}(P)=GP_{\text{sym}}G,~~P\in \text{Sym}_d^{+}.$$
+Finally, the descent step with learning rate $\eta>0$ is performed and mapped back on the manifold, i.e. at update iteration $t$, 
+$$G^{(t+1)}\leftarrow \exp_{G^{(t)}}\left(-\eta \Pi_{T_{G^{(t)}}\text{Sym}_d^{+}}(\nabla^{\text{eucl}}L(G^{(t)})\right).$$
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
