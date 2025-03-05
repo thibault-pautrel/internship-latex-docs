@@ -1569,8 +1569,8 @@ $$\text{dist}(X,X')=\|\log(X^{-1/2}X'X^{-1/2}\|_{\text{Frob}}.$$
 
 %%%%%%%%
 \chapter{Fisher--Rao geometry}
-
-\section{Statistical model}
+\section{Background}
+\subsection{Statistical model}
 Let $\{x_i\}_{i=1}^{n} \in \mathcal{X}$ a sample of observation in the sample space $\mathcal{X}$, we often want to compute an estimation of a  parameter $\theta \in \E$ (parameter space), such parameter being a discriminant feature for a given problem of interest. Usually $\E$ is a finite-dimensional linear space (say dimension $q$), endowed with the Euclidean inner product
 $$\langle \theta_1,\theta_2\rangle=\vecto(\theta_1)^T \vecto(\theta_2)$$
 and Euclidean distance
@@ -1605,6 +1605,67 @@ $$C_{\theta}:=\Esp\left[(\vecto(\hat{\theta})-\vecto(\theta))(\vecto(\hat{\theta
 Remark that
 $$\text{Var}(\hat{\theta})=\text{Tr}(C_{\theta})=\Esp\left[ \|\vecto(\hat{\theta})-\vecto(\theta)\|_2^2\right]=:\text{MSE}(\hat{\theta},\theta).$$
 \end{rmk}
+
+\subsection{CES distributions and Fisher information matrix}
+\begin{defn}[C-CES distribution]
+A vector $x\in \C^p$ follows a centered C-CES distribution, denoted by 
+$x\sim \text{C-CES}(0,\Sigma,g)$ if 
+$$\text{law}(x)=\text{law}(\sqrt{Q}\Sigma^{1/2}u),$$
+where $u \sim \text{Unif}(\C S^{p}), Q\in \R^{+}$ is a real random variable with probability density function $f_{Q}$ and is independent of $u$; $\Sigma$ is a covariance matrix that we assume is full-rank.
+\end{defn}
+Assuming full-rank for $\Sigma$ makes it possible to consider the probability density function of $x$, given by
+$$f_{x}(x\mid \Sigma) \propto |\Sigma|^{-1})g\left(x^{H}\Sigma^{-1}x\right),$$
+where $g:\R^{+}\to \R^{+}$ is the density generator which satisfies 
+$$\int_0^{\infty}t^{p-1}g(t)dt<\infty.$$
+\begin{prop}[Log-likelihood]
+Let $\{x_i\}_{i=1}^{n}$ an i.i.d. sample from $x\sim \text{C-CES}(0,\Sigma,g)$. Its log-likelihood is given as
+$$\mathcal{L}_g(\{x_i\}_{i=1}^{n}\mid \Sigma)=\sum_{i=1}^{n}\log\left(g\left(x_i^{H}\Sigma^{-1}x_i\right)\right)-n\log(|\Sigma|).$$
+\end{prop}
+Let us denote by $\Sigma(v)$ a parametrization of the covariance matrix through a real-valued vector $v$ (typically $p^2$). 
+The \emph{score} vector is defined entry-wise as
+$$s_{j}=\frac{\partial \mathcal{L}_g\left(\{x_i\}_{i=1}^{n}\mid \Sigma(v)\right)}{\partial v_j}.$$
+\begin{defn}[Fisher information matrix]
+The Fisher matrix associated to $\mathcal{L}_g$ is defined as
+$$F_{jk}=\Esp\left[s_j s_k\right].$$
+\end{defn}
+For C-CES distribution, the Fisher information matrix is explicit.
+\begin{prop}
+Let $\{x_i\}_{i=1}^{n}$ an i.i.d. sample from $x\sim \text{C-CES}(0,\Sigma,g)$, with $\Sigma=\Sigma(v)$. The entries of the Fisher information matrix are
+$$F_{jk}=n\alpha_g\text{Tr}(\Sigma^{-1}\xi_j\Sigma^{-1}\xi_k)+n\beta_g\text{Tr}(\Sigma^{-1}\xi_j)\text{Tr}(\Sigma^{-1}\xi_k),$$
+where
+$$\xi_j=\frac{\partial \Sigma(v)}{\partial v_j}~,~~\alpha_g=1-\frac{\Esp[Q^2\phi^{\prime}(Q)}{p(p+1)}~\text{ and }~\beta_g=\alpha_g-1,$$
+with $\phi=g^{\prime}/g$.
+\end{prop}
+The Fisher information matrix in involved in the so-called Cramér--Rao inequality:
+$$\Esp[(\hat{\theta}-\theta)(\hat{\theta}-\theta)^{T}]\succeq F^{-1} \Rightarrow \|\hat{\theta}-\theta\|^2_{\text{Frob}}\ge \text{Tr}(F^{-1})$$
+where $\hat{\theta}$ is an unbiased estimator of $\theta$ built from the observation sample $\{x_i\}_{i=1}^{n}$. 
+\section{Riemannian structure}
+$\mathcal{H}^{++}_p$ (set of SPD Hermitian matrices) is a smooth open submanifold of $\mathcal{H}_p$ (vector space of Hermitian matrices) of dimension $p^2$ and at each $\Sigma \in \mathcal{H}_p^{++}$, the tangent space is identified as follows
+$$T_{\Sigma}\mathcal{H}_p^{++}\simeq \mathcal{H}_p.$$
+\subsection{Riemannian metric}
+Instead of considering the Euclidean inner product $\langle \xi,\eta\rangle_{\Sigma}^{\text{eucl}}=\text{Re}(\text{Tr}(\xi^{H}\eta))$ that do not take into account the geometry of $\mathcal{H}_{p}^{++}$, one can define other metrics (e.g. Affine-Invariant metric, Bures--Wasserstein, log--euclidean). Let us define the FIsher information metric (FIM), which is particularly relevant when dealing wit a statistical model, since it is a data-driven metric.
+\begin{defn}[FIM Riemannian metric]
+Let $\Sigma\in \mathcal{H}_p^{++}$. For all $\xi, \eta \in T_{\Sigma}\mathcal{H}_{p}^{++}$, 
+$$\langle \xi,\eta \rangle_{\Sigma}^{\text{FIM}}:=\Esp\left[ D\mathcal{L}_g(x\mid \Sigma)[\xi] D\mathcal{L}_g(x\mid \Sigma)[\eta] \right].$$
+\end{defn}
+In the case of C-CES distributions, we have an explicit expression for the FIM.
+\begin{thm}[FIM for C-CES distributions]
+Let $\Sigma\in \mathcal{H}_p^{++}$ and let $\{x_i\}_{i=1}^{n}$ an i.i.d. sample from $x\sim \text{C-CES}(0,\Sigma,g)$. For all $\xi, \eta \in T_{\Sigma}\mathcal{H}_{p}^{++}$, 
+$$\langle \xi,\eta\rangle_{\Sigma}^{\text{FIM}}=n\alpha_g\text{Tr}(\Sigma^{-1}\xi\Sigma^{-1}\eta)+n\beta_g\text{Tr}(\Sigma^{-1}\xi)\text{Tr}(\Sigma^{-1}\eta).$$
+\end{thm}
+\begin{proof}[Sketch of the proof]
+The proof relies on the stochastic representation of $x=\sqrt{Q}\Sigma^{1/2}u$ of C-CES  distributed sample points, on the invariance property of the trace operator and on the two differentials
+$$D\log|\Sigma|[\xi]=\text{Tr}(\Sigma^{-1}\xi)~\text{ and }~D(\Sigma^{-1})[\xi]=-\Sigma^{-1}\xi\Sigma^{-1}.$$
+\end{proof}
+In the remainder of the chapter, we will rather use the generic metric (general affine-invariant metric):
+$$\langle \xi, \eta\rangle_{\Sigma}=:g_{\Sigma}(\xi,\eta)=\text{Re}\left[\alpha \text{Tr}(\Sigma^{-1}\xi\Sigma^{-1}\eta)+\beta \text{Tr}(\Sigma^{-1}\xi)\text{Tr}(\Sigma^{-1}\eta) \right]$$
+with $\alpha>0$ and $\beta>-\alpha/p$ (to ensure the positive definite property of the corresponding inner product).
+\begin{rmk} The case where $\alpha=1$ and $\beta=0$ coincides with the FIM of the Gaussian distribution.
+\end{rmk}
+
+\subsection{Levi--Civita connection}
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -1747,19 +1808,24 @@ It gives rise to the following layers:
 
 
 \section{Backpropagation}
+See \cite{ionescu2015matrix}. 
+Recall that given a set of data points $\mathcal{D}=\{(d^{(i)},y^{(i)}\}_{i=1}^{N}$, a loss function $L:\R^d\to \R$ and a model prediction function with parameters $W$ for the inputs $\{d\}_{i=1}^{N}$, i.e. $f:\R^{D}\to \R^d$ such that $y^{(i)}=f(d^{(i)},W)$, Empirical Risk Minimization theory states that in order to learn well-enough, it suffices to minimize
+$$\arg \min_{W}\frac{1}{N}\sum_{i=1}^{N}L(f(d^{(i)},W),y^{(i)}).$$
+When $L$ and $f$ are continuous, (sub)-gradient descent is commonly used as a way to learn the parameters $W$. 
 
-The SPDNet model can be represented as a composition of layer functions
+Deep networks -- and in particular SPDNet -- models can be represented as a composition of layer functions
 $$f=f^{(l)}\circ f^{(l-1)}\circ \dots \circ f^{(1)},$$
 where $f^{(k)}$ is the function involved at the $k$-th layer and $l$ the number of layers.
 At each layer $k$, we have a weight matrix $W_k$, yielding weight parameter tuple 
 $$W=(W_l, W_{l-1},\dots,W_1).$$
-Let $\ell$ be the loss function for the final output layer. The loss of the $k$-th layer is given by
-$$L^{(k)}=\ell \circ f^{l}\circ \dots \circ f^{(k)}.$$
-In order to update the weights at each layer $k$, we need to compute $\frac{\partial L^{(k)}(X_{k-1},y)}{\partial W_k}$. The chain rule (backpropagation) gives
+The loss as a function of the $k$-th layer is given by
+$$L^{(k)}=L\circ f^{(l)}\circ \dots \circ f^{(k)}.$$
+The central tool in the learning (update of the weights parameters) procedure is the computation of the gradient of the loss function w.r.t. the parameters. Backpropagation heavily relies on the use of the chain rule to do so. Let $(d,y)$ be any data tuple
 \begin{equation}\label{eq.gradW} 
-\frac{\partial L^{(k)}(X_{k-1},y)}{\partial W_k}=\frac{\partial L^{(k+1)}(X_{k},y)}{\partial X_k}\frac{\partial f^{(k)}(X_{k-1})}{\partial W_k}.
+\frac{\partial L^{(k)}(X_{k-1},y)}{\partial W_k}=\frac{\partial L^{(k+1)}(X_{k},y)}{\partial X_k}\frac{\partial f^{(k)}(X_{k-1})}{\partial W_k}
 \end{equation}
-To compute the gradient w.r.t. the input data, we have similarly using chain rule
+where $x_k=f^{(k)}(x_{k-1})$ and $x_0=d$. \\ 
+Since we also need to compute the gradients in the layers below and update their parameters, we also consider 
 $$
 \frac{\partial L^{(k)}(X_{k-1},y)}{\partial X_k}=\frac{\partial L^{(k+1)}(X_{k},y)}{\partial X_k}\frac{\partial f^{(k)}(X_{k-1})}{\partial X_{k-1}}
 $$
@@ -1784,9 +1850,36 @@ The EIG operation on an SPD matrix $X$ is the eigen-decomposition
 \end{equation}
 where $UU^T=\Id$ and $\Sigma$ is diagonal with positive entries $\sigma_i$. Since it is not an element-wise operation, backpropagation is not straightforward and must account for how small variations on $X$ affect $U$ and $\Sigma$. 
 
-Assuming a small variation $dX$ of $X$, we obtain using Equation (\ref{eq.eig})
+
+
+\paragraph{Method}
+Let $\mathcal{F}$ be the functional that describes the variation of the upper layer variables w.r.t. the lower layer variables:
+$$dX_k=\mathcal{F}(dX_{k-1}).$$
+Here, with the same notation of in Equation (\ref{eq.eig}), $\mathcal{F}: dX \mapsto (dU,d\Sigma)$.
+\\ Denote by $A:B=\text{Tr}(A^{T}B)$ the matrix inner product. Recall that for a generic differentiable function $\varphi: \R^{m\times n}\to \R$, one have the following first-order Taylor expansion:
+$$\varphi(X+dX)=f(X)+\frac{\partial \varphi}{\partial X}: dX+O(\|dX\|^2).$$
+The idea is to (i) project the variation $dX$ onto an admissible space and (ii) transfer the projection onto the derivative to obtain the projected gradient, by considering the adjoint operator $\mathcal{F}^{\ast}$ of $\mathcal{F}$. Namely,
+\[
+\frac{\partial L^{(k+1)}}{\partial X_k}: dX_k =\frac{\partial L^{(k+1)}}{\partial X_k}: \mathcal{F}(dX_{k-1})= \mathcal{F}^{\ast}\left(\frac{\partial L^{(k+1)}}{\partial X_k} \right) : dX_{k-1}
+\]
+Hence
+\begin{equation} \label{eq.adj}
+\frac{\partial L^{(k)}(X_{k-1},y)}{\partial X_{k-1}}=\mathcal{F}^{\ast}\left(\frac{\partial L^{(k+1)}}{\partial X_k} \right).
+\end{equation}
+Here, for both layers ReEig and LogEig layers, the EIG operation is involved through
+$$X_{k-1}=U_{k-1}\Sigma_{k-1}U_{k-1}^{T}.$$
+Consider a virtual layer $k^{\prime}$ for the EIG operation. Using Equation (\ref{eq.adj}) gives
+\begin{eqnarray}
+\frac{\partial L^{(k)}}{\partial X_{k-1}}:dX_{k-1}&=&\mathcal{F}^{\ast}\left(\frac{\partial L^{(k^{\prime})}}{\partial U} \right): dX_{k-1}+\mathcal{F}^{\ast}\left(\frac{\partial L^{(k^{\prime})}}{\partial \Sigma} \right):dX_{k-1}\\
+\label{eq.com.adj}
+&=&\frac{\partial L^{(k^{\prime})}}{\partial U}:dU+ \frac{\partial L^{(k^{\prime})}}{\partial \Sigma}:d\Sigma
+\end{eqnarray}
+
+
+
+Assuming a small variation $dX_{k-1}$ of $X_{k-1}$, we obtain using Equation (\ref{eq.eig})
 $$
-dX=dU\Sigma U^T+Ud\Sigma U^T+U\Sigma dU^T.
+dX_{k-1}=dU\Sigma U^T+Ud\Sigma U^T+U\Sigma dU^T.
 $$
 
 The variations in the eigenvalues are given by the following result.
@@ -1816,42 +1909,46 @@ The variations in the eigenvectors are given by the following result.
     $$P_{ij}=\frac{1}{\sigma_i-\sigma_j}\mathds{1}_{i\neq j}.$$
     \end{prop}
     
-Remark that both ReEig and LogEig layers have a similar structure:
-$$X \mapsto Ug(\Sigma)U^T;$$
-for some function $g$ defined as
-\begin{itemize}
-    \item $g(\Sigma)=\max(\varepsilon \Id,\Sigma)$ for ReEig layer;
-    \item $g(\Sigma)=\log(\Sigma)$ for LogEig layer.
-\end{itemize}
-Our loss function $L$ depends on both $U$ and $\Sigma$. 
-The total variation in the loss $L$ is given by chain rule as
-$$dL=\frac{\partial L}{\partial U}:dU+\frac{\partial L}{\partial \Sigma}:d\Sigma.$$
-From the previous expressions, we have
+Combining the previous expressions , we have
 \begin{eqnarray*}
-    dL&=&\frac{\partial L}{\partial U}:2U(P^T \circ (U dX U)_{\text{sym}})+\frac{\partial L}{\partial \Sigma}:(U^T dX U)_{\text{diag}}\\
-    &=&\left [2U(P^T \circ (U^T \frac{\partial L}{\partial U})_{\text{sym}})U^T+U\left (\frac{\partial L}{\partial \Sigma} \right )_{\text{diag}} U^T\right ]: dX
+    \frac{\partial{L^{(k)}}}{\partial X_{k-1}}&=&\frac{\partial L^{(k^{\prime})}}{\partial U}:2U(P^T \circ (U dX U)_{\text{sym}})+\frac{\partial L^{(k^{\prime})}}{\partial \Sigma}:(U^T dX U)_{\text{diag}}\\
+    &=&\left [2U\left(P^T \circ \left(U^T \frac{\partial L^{(k^{\prime})}}{\partial U}\right)_{\text{sym}}\right)U^T+U\left (\frac{\partial L^{(k^{\prime})}}{\partial \Sigma} \right )_{\text{diag}} U^T\right ]: dX
 \end{eqnarray*}
 Since the previous equality holds for every $dX$, we finally obtain
-$$\frac{\partial L}{\partial X}=2U(P^T \circ (U^T \frac{\partial L}{\partial U})_{\text{sym}})U^T+U\left (\frac{\partial L}{\partial \Sigma} \right )_{\text{diag}}U^T.$$
+$$\frac{\partial L^{(k)}}{\partial X_{k-1}}=2U(P^T \circ (U^T \frac{\partial L^{(k^{\prime})}}{\partial U})_{\text{sym}})U^T+U\left (\frac{\partial L^{(k^{\prime})}}{\partial \Sigma} \right )_{\text{diag}}U^T.$$
 
 \begin{description}
-    \item[ReEig layer:]  since $g^{\prime}(\sigma)=\mathds{1}_{\sigma>\varepsilon}$, let us define
+    \item[ReEig layer:] We have 
+    $X_k=Ug(\Sigma) U^{T}$
+    with $g(\Sigma)=\max(\varepsilon \Id,\Sigma)$. 
+    
+    Since $g^{\prime}(\sigma)=\mathds{1}_{\sigma>\varepsilon}$, let us define
      $$Q:=\text{diag}(q_1,\dots,q_d) \text{ where } q_i=\mathds{1}_{\sigma_i>\varepsilon}.$$
-    Therefore
-    $$\frac{\partial L}{\partial \Sigma}=QU^T \left ( \frac{\partial L}{\partial X} \right )_{\text{sym}} U.$$
-    On the other hand, standard derivation w.r.t. $U$ gives 
+     Let us write $A:=\max(\varepsilon \Id,\Sigma)$. Since $dA=Qd\Sigma$, we have
+    $$dX_{k}=2(dUAU^T)_{\text{sym}}+(UQd\Sigma U^{T})_{\text{sym}}.$$
+    Then, we have
+    \begin{eqnarray*}
+    \frac{\partial L^{(k+1)}}{\partial X_k}:dX_k&=&\frac{\partial L^{(k+1)}}{\partial X_k}: \left[2(dU AU^T)_{\text{sym}}+(UQd\Sigma U^{T})_{\text{sym}}\right]\\
+    &=&\left[2\left(\frac{\partial L^{(k+1)}}{\partial X_k}\right)_{\text{sym}}U A \right]: dU+ \left[Q^TU^T\left(\frac{\partial L^{(k+1)}}{\partial X_k}\right)_{\text{sym}}U\right]:d\Sigma
+    \end{eqnarray*}
+    
+    we obtain, by identification with Equation (\ref{eq.com.adj}):
+    $$\frac{\partial L^{(k^{\prime})}}{\partial \Sigma}=QU^T \left ( \frac{\partial L^{(k+1)}}{\partial X_k} \right )_{\text{sym}} U~~~ \text{ and }~~~
+    \frac{\partial L^{(k^{\prime})}}{\partial U}=2\left ( \frac{\partial L^{(k+1)}}{\partial X_k} \right )_{\text{sym}} U \max(\varepsilon \Id, \Sigma).
     $$
-    \frac{\partial L}{\partial U}=2\left ( \frac{\partial L}{\partial X} \right )_{\text{sym}} U \max(\varepsilon \Id, \Sigma).
+    \item[LogEig layer:] We have 
+    $X_k=Ug(\Sigma) U^{T}$
+    with $g(\Sigma)=\log(\Sigma)$. 
+    Since $g^{\prime}(\Sigma)=\Sigma^{-1}$, from
+    $$dX_{k}=2(dU\log(\Sigma)U^{T})_{\text{sym}}+(U\Sigma^{-1}d\Sigma U^T)_{\text{sym}}$$
+    we obtain in the same way
     $$
-    \item[LogEig layer:] since $g^{\prime}(\Sigma)=\Sigma^{-1}$, we obtain
-    $$
-    \frac{\partial L}{\partial \Sigma}=\Sigma^{-1}U^T \left ( \frac{\partial L}{\partial X} \right )_{\text{sym}} U
-    $$
-    and
-    $$
-    \frac{\partial L}{\partial U}=2\left ( \frac{\partial L}{\partial X} \right )_{\text{sym}} U \log(\Sigma).
+    \frac{\partial L^{(k^{\prime})}}{\partial \Sigma}=\Sigma^{-1}U^T \left ( \frac{\partial L^{(k+1)}}{\partial X_k} \right )_{\text{sym}} U~~~ \text{ and }~~~
+    \frac{\partial L^{(k^{\prime})}}{\partial U}=2\left ( \frac{\partial L^{(k+1)}}{\partial X_k} \right )_{\text{sym}} U \log(\Sigma).
     $$
 \end{description}
+
+
 
 \section{Riemannian batch normalization}
 

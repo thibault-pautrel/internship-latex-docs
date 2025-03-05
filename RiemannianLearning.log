@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.10.14)  4 MAR 2025 23:10
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.10.14)  5 MAR 2025 16:25
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -679,43 +679,42 @@ Overfull \hbox (2.6143pt too wide) in paragraph at lines 1503--1504
 Chapter 5.
 [51
 
-] [52]
+] [52] [53] [54]
 Chapter 6.
 
-Underfull \hbox (badness 10000) in paragraph at lines 1613--1614
+Underfull \hbox (badness 10000) in paragraph at lines 1674--1675
 
  []
 
-[53
+[55
 
-] [54] [55] [56]
-Overfull \hbox (9.64685pt too wide) in paragraph at lines 1768--1772
+] [56] [57] [58]
+Overfull \hbox (9.64685pt too wide) in paragraph at lines 1834--1838
 \OT1/cmr/m/n/10 Recall that the BiMap layer bi-lin-early maps $\OML/cmm/m/it/10
  X[] \OMS/cmsy/m/n/10 2 [][]$ \OT1/cmr/m/n/10 to $\OML/cmm/m/it/10 X[] \OT1/cmr
 /m/n/10 = \OML/cmm/m/it/10 f[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 X[]; W[]\OT1/cm
 r/m/n/10 ) = \OML/cmm/m/it/10 W[]X[]W[]$
  []
 
-[57]
+[59] [60]
 LaTeX Font Info:    Trying to load font information for U+dsrom on input line 1
-816.
+909.
  (/usr/local/texlive/2024/texmf-dist/tex/latex/doublestroke/Udsrom.fd
 File: Udsrom.fd 1995/08/01 v0.1 Double stroke roman font definitions
-)
-[58] [59]
-Overfull \hbox (4.02478pt too wide) in paragraph at lines 1910--1913
+) [61] [62]
+Overfull \hbox (4.02478pt too wide) in paragraph at lines 2007--2010
 []\OT1/cmr/m/n/10 Let us now present the Rie-man-nian batch nor-mal-iza-tion al
 -go-rithm. Con-sider a batch $\OMS/cmsy/m/n/10 f\OML/cmm/m/it/10 P[]\OMS/cmsy/m
 /n/10 g[] 2
  []
 
-[60] [61] [62
-
-]
+[63] [64]
 Chapter 7.
-[63] [64] [65] [66] [67] (./RiemannianLearning.bbl [68
+[65
 
-]) [69]
+] [66] [67] [68] [69] (./RiemannianLearning.bbl [70
+
+]) [71]
 (./RiemannianLearning.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
@@ -723,10 +722,10 @@ L3 programming layer <2024-02-20>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 15022 strings out of 474116
- 310491 string characters out of 5743681
+ 15026 strings out of 474116
+ 310571 string characters out of 5743681
  1942187 words of memory out of 5000000
- 37096 multiletter control sequences out of 15000+600000
+ 37100 multiletter control sequences out of 15000+600000
  570142 words of font info for 82 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  116i,13n,121p,640b,297s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -754,10 +753,10 @@ exmf-dist/fonts/type1/public/amsfonts/cm/cmti7.pfb></usr/local/texlive/2024/tex
 mf-dist/fonts/type1/public/doublestroke/dsrom10.pfb></usr/local/texlive/2024/te
 xmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/202
 4/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb>
-Output written on RiemannianLearning.pdf (69 pages, 514910 bytes).
+Output written on RiemannianLearning.pdf (71 pages, 527840 bytes).
 PDF statistics:
- 352 PDF objects out of 1000 (max. 8388607)
- 230 compressed objects within 3 object streams
+ 358 PDF objects out of 1000 (max. 8388607)
+ 234 compressed objects within 3 object streams
  0 named destinations out of 1000 (max. 500000)
  13 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -37,24 +37,30 @@
 \contentsline {subsection}{\numberline {4.3.1}Log--euclidean metric}{48}{}%
 \contentsline {subsection}{\numberline {4.3.2}Affine invariant metric}{49}{}%
 \contentsline {chapter}{\numberline {5}Fisher--Rao geometry}{51}{}%
-\contentsline {section}{\numberline {5.1}Statistical model}{51}{}%
-\contentsline {chapter}{\numberline {6}SPD neural network}{53}{}%
-\contentsline {section}{\numberline {6.1}Log-Euclidean geometry}{53}{}%
-\contentsline {section}{\numberline {6.2}Architecture of SPD network}{54}{}%
-\contentsline {subsection}{\numberline {6.2.1}BiMap layer}{55}{}%
-\contentsline {subsection}{\numberline {6.2.2}ReEig layer}{55}{}%
-\contentsline {subsection}{\numberline {6.2.3}LogEig layer}{55}{}%
-\contentsline {section}{\numberline {6.3}Backpropagation}{56}{}%
-\contentsline {subsection}{\numberline {6.3.1}BiMap layer}{57}{}%
-\contentsline {subsection}{\numberline {6.3.2}EIG-based layers}{57}{}%
-\contentsline {section}{\numberline {6.4}Riemannian batch normalization}{59}{}%
-\contentsline {subsection}{\numberline {6.4.1}Riemannian structure}{59}{}%
-\contentsline {paragraph}{Karcher flow algorithm}{60}{}%
-\contentsline {subsection}{\numberline {6.4.2}Riemannian batch normalization algorithm}{60}{}%
-\contentsline {subsection}{\numberline {6.4.3}Backpropagation}{61}{}%
-\contentsline {chapter}{\numberline {7}Federated Learning}{63}{}%
-\contentsline {section}{\numberline {7.1}Framework}{63}{}%
-\contentsline {subsection}{\numberline {7.1.1}Federated averaging algorithm}{64}{}%
-\contentsline {subsection}{\numberline {7.1.2}Guidelines for developing practical algorithms}{65}{}%
-\contentsline {section}{\numberline {7.2}Federated optimization theory}{66}{}%
-\contentsline {paragraph}{Assumptions}{66}{}%
+\contentsline {section}{\numberline {5.1}Background}{51}{}%
+\contentsline {subsection}{\numberline {5.1.1}Statistical model}{51}{}%
+\contentsline {subsection}{\numberline {5.1.2}CES distributions and Fisher information matrix}{52}{}%
+\contentsline {section}{\numberline {5.2}Riemannian structure}{53}{}%
+\contentsline {subsection}{\numberline {5.2.1}Riemannian metric}{53}{}%
+\contentsline {subsection}{\numberline {5.2.2}Levi--Civita connection}{54}{}%
+\contentsline {chapter}{\numberline {6}SPD neural network}{55}{}%
+\contentsline {section}{\numberline {6.1}Log-Euclidean geometry}{55}{}%
+\contentsline {section}{\numberline {6.2}Architecture of SPD network}{56}{}%
+\contentsline {subsection}{\numberline {6.2.1}BiMap layer}{57}{}%
+\contentsline {subsection}{\numberline {6.2.2}ReEig layer}{57}{}%
+\contentsline {subsection}{\numberline {6.2.3}LogEig layer}{57}{}%
+\contentsline {section}{\numberline {6.3}Backpropagation}{58}{}%
+\contentsline {subsection}{\numberline {6.3.1}BiMap layer}{59}{}%
+\contentsline {subsection}{\numberline {6.3.2}EIG-based layers}{60}{}%
+\contentsline {paragraph}{Method}{60}{}%
+\contentsline {section}{\numberline {6.4}Riemannian batch normalization}{62}{}%
+\contentsline {subsection}{\numberline {6.4.1}Riemannian structure}{62}{}%
+\contentsline {paragraph}{Karcher flow algorithm}{63}{}%
+\contentsline {subsection}{\numberline {6.4.2}Riemannian batch normalization algorithm}{63}{}%
+\contentsline {subsection}{\numberline {6.4.3}Backpropagation}{64}{}%
+\contentsline {chapter}{\numberline {7}Federated Learning}{65}{}%
+\contentsline {section}{\numberline {7.1}Framework}{65}{}%
+\contentsline {subsection}{\numberline {7.1.1}Federated averaging algorithm}{66}{}%
+\contentsline {subsection}{\numberline {7.1.2}Guidelines for developing practical algorithms}{67}{}%
+\contentsline {section}{\numberline {7.2}Federated optimization theory}{68}{}%
+\contentsline {paragraph}{Assumptions}{68}{}%
