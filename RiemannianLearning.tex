@@ -1860,12 +1860,79 @@ To do so, we resort to tools such as Fréchet mean, parallel transport and Riema
 Such normalization layer can be integrated into existing SPD network architectures. 
 The main reference for this section is \cite{brooks2019riemannian}.
 \subsection{Riemannian structure}
+We consider the Affine-Invariant metric (AIRM). Recall that the Riemannian distance between two SPD matrices $P_1$ and $P_2$ is
+$$\delta_{R}(P_1,P_2)=\frac{1}{2}\left\|\log(P_1^{-1/2}P_2P_1^{-1/2}\right\|_{\text{Frob}},$$
+where $\log(\cdot)$ is the matrix logarithm and $\|\cdot\|_{\text{Frob}}$ is the Frobenius norm. 
+\\ Let $P_0\in \text{Sym}_{n}^{+}$. 
+\begin{description}
+\item[Exponential map:] for all $S\in T_{P_0}\text{Sym}_n^{+}$, 
+$$\text{Exp}_{P_0}(S)=P_0^{1/2}\exp(P_0^{-1/2}SP_0^{-1/2})P_0^{1/2}.$$
+\item[Logarithmic map:] for all $P\in \text{Sym}_n^{+}$, 
+$$\text{Log}_{P_0}(P)=P_0^{1/2}\log(P_0^{-1/2}PP_0^{-1/2})P_0^{1/2}.$$
+\item[Parallel transport:] Let $P_1, P_2$ be two SPD matrices. For all $S\in T_{P_1}\text{Sym}_{n}^{+}$, we have
+$$\mathcal{T}_{P_1\to P_2}(S)=(P_2P_1^{-1})^{1/2}S(P_2P_1^{-1})^{1/2}.$$ 
+\end{description}
+Let $\{P_i\}_{i=1}^{N}$ be a batch of SPD matrices. Since $\text{Sym}_n^{+}$ is not a vector space, the Euclidean arithmetic mean $\frac{1}{N}\sum_{i=1}^{N}P_i$ is no longer SPD. To circumvent this and preserve the SPD property, we instead consider the Fréchet mean, also refered to as Riemannian barycenter.
+
+\begin{defn}[Riemannian barycenter]
+The weighted Riemannian barycenter of a batch $\{P_i\}_{i=1}^{N} \in (\text{Sym}_n^{+})^{N}$ is given by
+$$\text{Bar}_{w}(\{P_i\}_{i=1}^{N}):=\arg \min_{G\in \text{Sym}_n^{+}}\sum_{i=1}^{N}w_i\delta_R^{2}(G,P_i),$$
+where the weights are any family $\{w_i\}_{i=1}^{N}$ such that $w_i\ge 0$ and $\sum_{i=1}^{N}w_i=1$.
+\end{defn}
+\begin{rmk}
+When $N=2$ with weights $\{w,1-w\}$, a closed-form formula exists for the Riemannian barycenter:
+$$\text{Bar}_{\{w,1-w\}}(P_1,P_2)=P_1^{1/2}(P_1^{-1/2}P_2P_1^{-1/2})^{w}P_1^{1/2}$$
+where $\cdot^{w}=\exp(w \log(\cdot))$.\\
+When $N>2$, no closed-form solution exists and the Riemannian barycenter is computed iteratively using \emph{Karcher flow algorithm}. 
+\end{rmk}
+\paragraph{Karcher flow algorithm} See \cite{pennec2006riemannian} Section 3.7 Equation (14). We compute iteratively
+$$G=\arg \min_{G\in \text{Sym}_n^{+}}\sum_{i=1}^{N}w_i\delta_R^{2}(G,P_i).$$
+The key idea is to compute the weighted arithmetic average in the tangent space via the logarithmic mapping and map the result back on the manifold using the exponential mapping.
+\begin{itemize}
+\item First, set $G^{(0)}=\frac{1}{N}\sum_{i=1}^{N}P_i$ (initial value). 
+\item At each iterative step $t$, the update rule is
+$$G^{(t+1)}=\text{Exp}_{G^{(t)}}\left(\sum_{i=1}^{N}w_i\text{Log}_{G^{(t)}}(P_i)\right).$$
+\end{itemize}
+Convergence is guaranteed as it follows from the fact that $\text{Sym}_{n}^{+}$ has non-positive curvature. 
 
 
 \subsection{Riemannian batch normalization algorithm}
-
-
-
+Let us now see how to center and bias a batch of SPD matrice.
+\begin{itemize}
+\item To \emph{center} a batch $\{P_i\}_{i=1}^{N}$ with Riemannian barycenter $G$, each matrix $P_i$ is transported from $G$ to the identity matrix via parallel transport:
+$$\bar{P}_i=\mathcal{T}_{G\to \Id}(P_i)=G^{-1/2}P_iG^{-1/2}.$$
+It is analogous of $x-\mu$ in a Euclidean setting.
+\item To \emph{bias} a batch $\{P_i\}_{i=1}^{N}$ with Riemannian barycenter $G$, each matrix $\bar{P}_i$ is transported from the identity matrix to $G$ via parallel transport:
+$$\tilde{P}_i=\mathcal{T}_{\Id \to G}(P_i)=G^{1/2}\bar{P}_iG^{1/2}.$$
+It is analogous of $\gamma \hat{x}+\beta$ is Euclidean batch-normalization setting.
+\end{itemize}
+\par \medskip 
+Let us now present the Riemannian batch normalization algorithm.
+Consider a batch $\{P_i\}_{i=1}^{N}\in (\text{Sym}_n^{+})^{N}$ of SPD matrices.
+The general idea is (i) to compute the Riemannian batch barycenter, (ii) center each matrix, (iii) bias each matrix towards a (learnable) SPD parameter matrix $G$ and (iv) maintaining a running barycenter $G_S$ for inference. The training mode adapts dynamically to inputs while the inference mode ensures consistency. 
+\begin{description}
+\item[Training mode]: 
+\begin{enumerate}
+\item Compute the Riemannian barycenter (via Karcher flow algorithm)
+$$G_B=\text{Bar}(\{P_i\}_{i=1}^{N})=\arg\min_{G\in \text{Sym}_n^{+}}\sum_{i=1}^{N}\delta_R^{2}(G,P_i).$$
+\item Keep and update a running global barycenter $G_S$ tracking the overall training distribution. The update is performed as a weighted Riemannian average between the running barycenter and the current batch barycenter:
+$$G_S\leftarrow \text{Bar}_{(\eta,1-\eta)}(G_S,G_B) \iff G_S=G_B^{1/2}(G_B^{-1/2}G_SG_B^{-1/2})^{\eta}G_B^{1/2},~~\eta \in (0,1).$$
+\item Center each batch matrix:
+$$P_i^{c}=\mathcal{T}_{G_B\to \Id}(P_i)=G_B^{-1/2}P_iG_B^{-1/2}.$$
+\item Bias the previous centered matrix from $\Id$ to the learnable bias SPD matrix $G$:
+$$P_{i}^{b}=\mathcal{T}_{\Id \to G}(P_i^{c})=G^{1/2}P_i^{c}G^{1/2}.$$
+\end{enumerate}
+The normalized matrices are $\{P_i^{b}\}_{i=1}^{N}$. 
+\item[Inference mode]:
+We do not recalculate the batch barycenter $G_B$, but solely use the pre-computed running barycenter $G_S$  and precomputed learnt bias $G$ from the training mode. Let $\{\tilde{P}_i\}_{i=1}^{N}$ be a test batch. 
+\begin{enumerate}
+\item Center using running barycenter:
+$$\tilde{P}_i^{c}=G_S^{-1/2}\tilde{P}_iG_S^{-1/2}.$$
+\item Apply bias $G$:
+$$\tilde{P}_i^{b}=G^{1/2}\tilde{P}_i^{c}G^{1/2}.$$
+\end{enumerate}
+\end{description}
+\subsection{Backpropagation}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
