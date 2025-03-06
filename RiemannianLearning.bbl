@@ -1,4 +1,4 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{10}
 
 \bibitem{amari2016information}
 Shun-ichi Amari.
@@ -34,6 +34,10 @@ Zhiwu Huang and Luc Van~Gool.
 Catalin Ionescu, Orestis Vantzos, and Cristian Sminchisescu.
 \newblock Matrix backpropagation for deep networks with structured layers.
 \newblock In {\em Proceedings of the IEEE international conference on computer vision}, pages 2965--2973, 2015.
+
+\bibitem{ionescu2016trainingdeepnetworksstructured}
+Catalin Ionescu, Orestis Vantzos, and Cristian Sminchisescu.
+\newblock Training deep networks with structured layers by matrix backpropagation, 2016.
 
 \bibitem{pennec2006riemannian}
 Xavier Pennec, Pierre Fillard, and Nicholas Ayache.

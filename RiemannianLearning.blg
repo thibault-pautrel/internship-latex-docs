@@ -3,44 +3,44 @@ Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: RiemannianLearning.aux
 The style file: plain.bst
 Database file #1: biblio.bib
-You've used 9 entries,
+You've used 10 entries,
             2118 wiz_defined-function locations,
-            554 strings with 5642 characters,
-and the built_in function-call counts, 3142 in all, are:
-= -- 307
-> -- 151
+            557 strings with 5815 characters,
+and the built_in function-call counts, 3408 in all, are:
+= -- 329
+> -- 169
 < -- 3
-+ -- 63
-- -- 50
-* -- 228
-:= -- 523
-add.period$ -- 27
-call.type$ -- 9
-change.case$ -- 51
++ -- 70
+- -- 56
+* -- 243
+:= -- 569
+add.period$ -- 29
+call.type$ -- 10
+change.case$ -- 57
 chr.to.int$ -- 0
-cite$ -- 9
-duplicate$ -- 116
-empty$ -- 242
-format.name$ -- 50
-if$ -- 646
+cite$ -- 10
+duplicate$ -- 123
+empty$ -- 264
+format.name$ -- 56
+if$ -- 701
 int.to.chr$ -- 0
-int.to.str$ -- 9
+int.to.str$ -- 10
 missing$ -- 10
-newline$ -- 48
-num.names$ -- 18
-pop$ -- 49
+newline$ -- 52
+num.names$ -- 20
+pop$ -- 60
 preamble$ -- 1
-purify$ -- 43
+purify$ -- 48
 quote$ -- 0
-skip$ -- 84
+skip$ -- 91
 stack$ -- 0
-substring$ -- 202
-swap$ -- 24
+substring$ -- 207
+swap$ -- 25
 text.length$ -- 3
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 34
+type$ -- 38
 warning$ -- 0
-while$ -- 31
-width$ -- 10
-write$ -- 101
+while$ -- 33
+width$ -- 12
+write$ -- 109
