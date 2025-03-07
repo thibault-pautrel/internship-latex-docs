@@ -2203,12 +2203,59 @@ To do so,
 \item we finally use telescoping over $t$ to show that over $T$ rounds, significant progress towards the optimal value has been made.
 \end{enumerate}
 
+
+%%%%%%%%%%%%%%%%%%%%%
+\chapter{Federated learning on Riemannian manifolds}
+\section{Introduction}
+We consider the following minimization problem over a RIemannian manifold $\M$:
+$$\text{Find}\quad \arg \min_{x\in \M}f(x)\quad\text{with}~f(x)=\frac{1}{n}\sum_{i=1}^{n}f_i(x)$$
+where
+$f_i:\M\to\R$ a smooth function stored in different clients. 
+\begin{exm}
+Federated kPCA problem considers minimizing 
+$$f(X)=\frac{1}{n}\sum_{i=1}^{n}f_i(X)~\text{where}f_i(X)=-\frac{1}{2}\text{Tr}(X^TA_iX)$$
+over the Stiefel manifold $\Stif(d,r)$, where $A_i$ is the covariance matrix of the data stored by the $i$-th client. Notice that $r=1$ comes down the classical PCA.
+\end{exm}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage 
 \bibliographystyle{plain}
 
 \bibliography{biblio}
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \end{document}

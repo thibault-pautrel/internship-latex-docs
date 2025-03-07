@@ -66,3 +66,4 @@
 \contentsline {subsection}{\numberline {7.1.2}Guidelines for developing practical algorithms}{69}{}%
 \contentsline {section}{\numberline {7.2}Federated optimization theory}{70}{}%
 \contentsline {paragraph}{Assumptions}{70}{}%
+\contentsline {chapter}{\numberline {8}Federated learning on Riemannian manifolds}{73}{}%
