@@ -7,37 +7,86 @@ Shun-ichi Amari.
 
 \bibitem{arsigny2007geometric}
 Vincent Arsigny, Pierre Fillard, Xavier Pennec, and Nicholas Ayache.
-\newblock Geometric means in a novel vector space structure on symmetric positive-definite matrices.
-\newblock {\em SIAM journal on matrix analysis and applications}, 29(1):328--347, 2007.
+\newblock Geometric means in a novel vector space structure on symmetric
+  positive-definite matrices.
+\newblock {\em SIAM journal on matrix analysis and applications},
+  29(1):328--347, 2007.
 
 \bibitem{brooks2019riemannian}
-Daniel Brooks, Olivier Schwander, Fr{\'e}d{\'e}ric Barbaresco, Jean-Yves Schneider, and Matthieu Cord.
+Daniel Brooks, Olivier Schwander, Fr{\'e}d{\'e}ric Barbaresco, Jean-Yves
+  Schneider, and Matthieu Cord.
 \newblock Riemannian batch normalization for spd neural networks.
 \newblock {\em Advances in Neural Information Processing Systems}, 32, 2019.
+
+\bibitem{dwork2010boosting}
+Cynthia Dwork, Guy~N Rothblum, and Salil Vadhan.
+\newblock Boosting and differential privacy.
+\newblock In {\em 2010 IEEE 51st annual symposium on foundations of computer
+  science}, pages 51--60. IEEE, 2010.
 
 \bibitem{edelman1998geometry}
 Alan Edelman, Tom{\'a}s~A Arias, and Steven~T Smith.
 \newblock The geometry of algorithms with orthogonality constraints.
-\newblock {\em SIAM journal on Matrix Analysis and Applications}, 20(2):303--353, 1998.
+\newblock {\em SIAM journal on Matrix Analysis and Applications},
+  20(2):303--353, 1998.
 
 \bibitem{hager2006survey}
 William~W Hager and Hongchao Zhang.
 \newblock A survey of nonlinear conjugate gradient methods.
 \newblock {\em Pacific journal of Optimization}, 2(1):35--58, 2006.
 
+\bibitem{han2024differentially}
+Andi Han, Bamdev Mishra, Pratik Jawanpuria, and Junbin Gao.
+\newblock Differentially private riemannian optimization.
+\newblock {\em Machine Learning}, 113(3):1133--1161, 2024.
+
+\bibitem{huang2024federated}
+Zhenwei Huang, Wen Huang, Pratik Jawanpuria, and Bamdev Mishra.
+\newblock Federated learning on riemannian manifolds with differential privacy.
+\newblock {\em arXiv preprint arXiv:2404.10029}, 2024.
+
 \bibitem{huang2017riemannian}
 Zhiwu Huang and Luc Van~Gool.
 \newblock A riemannian network for spd matrix learning.
-\newblock In {\em Proceedings of the AAAI conference on artificial intelligence}, volume~31, 2017.
+\newblock In {\em Proceedings of the AAAI conference on artificial
+  intelligence}, volume~31, 2017.
 
 \bibitem{ionescu2015matrix}
 Catalin Ionescu, Orestis Vantzos, and Cristian Sminchisescu.
 \newblock Matrix backpropagation for deep networks with structured layers.
-\newblock In {\em Proceedings of the IEEE international conference on computer vision}, pages 2965--2973, 2015.
+\newblock In {\em Proceedings of the IEEE international conference on computer
+  vision}, pages 2965--2973, 2015.
 
 \bibitem{ionescu2016trainingdeepnetworksstructured}
 Catalin Ionescu, Orestis Vantzos, and Cristian Sminchisescu.
-\newblock Training deep networks with structured layers by matrix backpropagation, 2016.
+\newblock Training deep networks with structured layers by matrix
+  backpropagation, 2016.
+
+\bibitem{kairouz2015composition}
+Peter Kairouz, Sewoong Oh, and Pramod Viswanath.
+\newblock The composition theorem for differential privacy.
+\newblock In {\em International conference on machine learning}, pages
+  1376--1385. PMLR, 2015.
+
+\bibitem{konevcny2016federated}
+Jakub Kone{\v{c}}n{\'y}, H~Brendan McMahan, Daniel Ramage, and Peter
+  Richt{\'a}rik.
+\newblock Federated optimization: Distributed machine learning for on-device
+  intelligence.
+\newblock {\em arXiv preprint arXiv:1610.02527}, 2016.
+
+\bibitem{li2022federated}
+Jiaxiang Li and Shiqian Ma.
+\newblock Federated learning on riemannian manifolds.
+\newblock {\em arXiv preprint arXiv:2206.05668}, 2022.
+
+\bibitem{mcmahan2017communication}
+Brendan McMahan, Eider Moore, Daniel Ramage, Seth Hampson, and Blaise~Aguera
+  y~Arcas.
+\newblock Communication-efficient learning of deep networks from decentralized
+  data.
+\newblock In {\em Artificial intelligence and statistics}, pages 1273--1282.
+  PMLR, 2017.
 
 \bibitem{pennec2006riemannian}
 Xavier Pennec, Pierre Fillard, and Nicholas Ayache.
@@ -46,7 +95,14 @@ Xavier Pennec, Pierre Fillard, and Nicholas Ayache.
 
 \bibitem{sra2015conic}
 Suvrit Sra and Reshad Hosseini.
-\newblock Conic geometric optimization on the manifold of positive definite matrices.
+\newblock Conic geometric optimization on the manifold of positive definite
+  matrices.
 \newblock {\em SIAM Journal on Optimization}, 25(1):713--739, 2015.
+
+\bibitem{utpala2022improved}
+Saiteja Utpala, Andi Han, Pratik Jawanpuria, and Bamdev Mishra.
+\newblock Improved differentially private riemannian optimization: Fast
+  sampling and variance reduction.
+\newblock {\em Transactions on Machine Learning Research}, 2022.
 
 \end{thebibliography}

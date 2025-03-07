@@ -2086,10 +2086,10 @@ $$G^{(t+1)}\leftarrow \exp_{G^{(t)}}\left(-\eta \Pi_{T_{G^{(t)}}\text{Sym}_d^{+}
 
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\chapter{Federated Learning}
-
+%%%%%%%%%%%%%%%%%%%%%
+\chapter{Federated learning on Riemannian manifolds}
+\section{Introduction}
 From the definition given by Kairouz et al., \emph{federated learning} is a machine learning setting where multiple entities (called clients) collaborate in solving a machine learning (optimization) problem, under the coordination of a server or service provider. Each client's raw data is stored locally and not exchanged or transferred .Federated analytics works by running local computations over each device's data and only make the aggregated results available to product engineers. Federated optimization relies on several important ideas:
 \begin{itemize}
 \item Communication efficiency: reduced communication costs between the server and the clients.
@@ -2098,6 +2098,194 @@ From the definition given by Kairouz et al., \emph{federated learning} is a mach
 \item Privacy and security: access to information from the data is only thgough aggregates.
 \item System complexity: stragglers, data storage and local computation. Server orchastration. 
 \end{itemize}
+Given $n$ clients and one central server, we consider the following minimization problem
+\begin{equation}
+\label{eq.FL}
+\text{Find}\quad \arg \min_{x\in \M}f(x)\quad\text{with}~f(x)=\frac{1}{n}\sum_{i=1}^{n}f_i(x)
+\end{equation}
+where $\M$ is a Riemannian manifold and
+$f_i:\M\to\R$ is a local smooth function stored at client $i$, for $i=1,\dots, n$.
+\begin{exm}
+Federated kPCA problem considers minimizing
+$$f(X)=\frac{1}{n}\sum_{i=1}^{n}f_i(X)~\text{where}f_i(X)=-\frac{1}{2}\text{Tr}(X^TA_iX)$$
+over the Stiefel manifold $\Stif(d,r)$, where $A_i$ is the covariance matrix of the data stored by the $i$-th client. Notice that $r=1$ comes down the classical PCA.
+\end{exm}
+
+The first algorithmic procedure designed to tackle the federated problem was presented in \cite{mcmahan2017communication} and was restricted to the Euclidean setting, i.e. $\M=\R^d$: it is the so-called \emph{FedAvg} algorithm.
+\paragraph{FedAVg}
+In order to solve (\ref{eq.FL}), FedAvg implements the following procedure:
+\begin{description}
+\item[$\star$ Initialization] The server is provided with an initial pint $x_0$.
+Let $\eta>0$ be the global step-size and $\tau$ be the number of local epochs. 
+\item[$\star$ Outer loop] At each round $t=0,1,\dots, T$:
+\begin{enumerate}
+\item Sample a subset $S_t \subseteq \{1,\dots,n\}$ of the set of clients of size $k$.
+\item Each chosen client $i$ receives the current global iterate $x_t$ from the server and initializes
+$$x_0^{(i)}=x_t.$$
+\item \textit{Local update (ClientOpt)}: on each selected client $i$: for $\ell=0,\dots, \tau-1$,
+$$x_{\ell+1}^{(i)}=x_{\ell}^{(i)}-\eta \nabla f_i(x_{\ell}^{(i)}),$$
+where $\nabla$ is the Euclidean gradient operator.
+\item After $\tau_i$ local steps, each client $i$ send back the last value $x_{\tau}^{(i)}$ to the central server.
+\item \textit{Server aggregation (ServerOpt)}: the server receives $\{x_{\tau}^{(i)}\}_{i\in S_t}$ and computes the mean
+$$x_{t+1}=\frac{1}{|S_t|}\sum_{i\in S_t}x_{\tau}^{(i)}.$$
+\end{enumerate}
+\item[$\star$ Output]  $x_T$ as final result 
+\end{description}
+
+\begin{rmk}~
+\begin{enumerate}
+\item Unlike local SGD procedures, \text{FedAvg} assume only a subset of clients participate in each training round and no assumption is made on homogeneity of local data nor on the number of local updates, which can vary from one client to another.
+\item Every client is allowed to have a different optimization procedure \text{ClientOpt} (\emph{personalized model}).
+\item Regularization terms can be added to the objective function $F$ to promote sparsity or enforce various constraints (rank, monotonicity, etc.):
+$$\min_x F(x)+\Omega(x)$$
+with regularizer $\Omega(x)$ convex, possibly non-smooth, non-finite additive.
+\end{enumerate}
+\end{rmk}
+\section{Riemannian FL models}
+\subsection{FedSVRG} Since the local function $f_i$ can differ greatly in the case of heterogenous data, the local gradient $\nabla f_i$ can deviate significantly from the global gradient $\nabla f$. To address this mismatch between local and global gradients, \cite{konevcny2016federated}  introduce a correction term called \emph{Stochastic Variance Reduction} (SVR). This new model is called \emph{Federated Stochastic Variance Reduced Gradient} (FedSVRG).  Instead of computing $\nabla f_i(x_{\ell}^{(i)})$, it considers
+$$\nabla f_i(x_{\ell}^{(i)})-\underbrace{\left(\nabla f_i(x_{t})-\nabla f(x_t)\right)}_{\text{SVR term}}.$$
+This term helps correct the drift and bring local updates closer to an unbiased estimate of the global gradient. In particular, it controls the variance caused by data heterogeneity and leads to more stable results. 
+\par \bigskip
+
+\subsection{RFedSVRG} Now, let us describe the Riemannian counterpart of the FedAvg algorithm, called \emph{Riemannian Federated Stochastic Variance Reduced Gradient} (RFedSVRG), refined with the use of SVR correction term (\cite{li2022federated}) to that ensure that each client's local progress stays consistent with the global objective. \\
+In Euclidean Federated learning setting, the central server averages the local updates. Here, since our points lie on a manifold $\M$, we rely on Fréchet mean, computed through Karcher flow algorithm.
+
+Here $\grad$ refers to the Riemannian gradient and $\Gamma_{x\to y}$ is he parallel transport from $T_x\M$ to $T_y\M$.
+\begin{description}
+\item[$\star$ Initialization] The server is provided with an initial pint $x_0 \in \M$.
+For each client $i$, the server chooses a step size $\eta^{(i)}$ and a number of local steps $\tau_i$.
+\item[$\star$ Outer loop] for $t=0,1,\dots, T$:
+\begin{enumerate}
+\item Sample a subset $S_t \subseteq \{1,\dots,n\}$ of the set of clients of size $k$.
+\item Each chosen client $i$ receives the current global iterate $x_t$ from the server and initializes
+$$x_0^{(i)}=x_t.$$
+\item \textit{Local update}: on each selected client $i$: for $\ell=0,\dots, \tau_i-1$,
+$$x_{\ell+1}^{(i)}=\text{Exp}_{x_{\ell}^{(i)}}\left(-\eta^{(i)}\left [\grad f_i(x_{\ell}^{(i)}) -\Gamma_{x_t \to x_{\ell}^{(i)}}\left(\grad f_i(x_t)-\grad f(x_t) \right)\right ]\right).$$
+\item After $\tau_i$ local steps, each client $i$ send back $x_{\tau_i}^{(i)}$ (either the last iterate or a random iterate among the local steps) to the central server.
+\item \textit{Server aggregation}: the server receives $\{x_{\tau}^{(i)}\}_{i\in S_t}$ and computes the Fréchet mean via Karcher flow algorithm
+$$x_{t+1}=\text{Exp}_{x_t}\left(\frac{1}{k}\text{Log}_{x_t}(x_{\tau_i}^{(i)})\right).$$
+\end{enumerate}
+\item[$\star$ Output] either choose $x_T$ as final result of uniformly sample over $\{x_0,\dots, x_T\}$.
+\end{description}
+
+In \cite{li2022federated}, the convergence of RFedSVRG is analyzed under the following assumptions:
+ \begin{itemize}
+ \item Each $f_i$ is $L_i$-smooth on $\M$, i.e. for all $x,y \in \M$,
+ $$\|\grad f_i(y)- \Gamma_{x\to y}\grad f_i(x)\|\leq L_i d(x,y)$$
+ where $d$ denotes the Riemannian distance.
+ \item Each $f_i$ is geodesically convex and $\M$ has bounded diameter.
+ \end{itemize}
+ Then, RFedSVRG converges at a rate $O(1/T)$.
+
+
+Such algorithms are often used in shallow learning (kPCA, low-rank estimation). 
+
+
+
+\section{Riemannian FL algorithm with differential privacy} Sensitive data in federated systems (e.g. health data, user device data) require privacy. Even though FL algorithms limit data exchange, an adversary can still infer sensitive information if the server or other clients are malicious. This risk motivates the integration of \emph{differential privacy} (DP) within the framework of Riemannian FL, in order to ensure that each client's local updates reveal as little information as possible.
+In \cite{huang2024federated}, a general Riemannian FL framework with DP is proposed, which possesses theoretical privacy guarantees and whose convergence can be analyzed in non-convex and convex settings. 
+The main references for differential privacy are \cite{dwork2010boosting,kairouz2015composition}. 
+This section studies how to adapt the previous RFedSVRG to include privacy mechanisms.
+\subsection{Differential privacy}
+Let $D=\{z_1,z_2,\dots, z_n\}$ be a dataset, where each datapoint $z_i$ is sampled from an input data space $\mathcal{Z}$, i.e. $D\in \mathcal{Z}^{n}$. 
+
+\begin{defn}[Adjacent datasets]
+Two datasets $D$ and $D^{\prime}$ are \emph{adjacent} under record-level privacy if they differ in at most one data record:
+$$D\sim D' \iff |D\oplus D'|\leq 2,$$
+where $\oplus$ denotes the symmetric difference. 
+\end{defn}
+Let $\mathcal{Z}$ be the space of individual records.
+\begin{defn}[Differential Privacy]
+A random  procedure $A:\mathcal{Z}^{n}\to \M$ is $(\varepsilon,\delta)$-differentially private (DP) under record-level adjacency if, for any pair of adjacent datasets $D\sim D'$ and for every measurable set $S\subseteq\Theta$:
+$$\Prob\left(A(D)\in S\right)\leq \exp(\varepsilon)\Prob(A(D')\in S)+\delta.$$
+\end{defn}
+Here $\varepsilon$ is the \emph{privacy-budget} ( a small value of $\varepsilon$ means strong privacy) and $\delta$ quantify the fact that the privacy guarantee may not hold.\\ The following result states that post-processing data under DP ensure at least the same level of DP.
+\begin{thm}[DP post-processing]
+Let $A:\mathcal{Z}^{n}\to \M$ be a randomized algorithm which is $(\varepsilon,\delta)$-DP. Let $P:\M \to \M^{\prime}$ be an arbitrary mapping. \\ Then, $P\circ A: \mathcal{Z}^{n}\to \mathcal{M}^{\prime}$ is also $(\varepsilon,\delta)$-DP.
+\end{thm}
+
+The following result states that the composition of several simple private mechanism remains DP with no degradation of its level of privacy.
+\begin{thm}[Sequential composition theorem]
+Let $i=1,\dots, k$ and assume $A_i:\mathcal{Z}^{n}\to \M_i$ is an $(\varepsilon_i,\delta_i)$-DP algorithm. Let $A_{[k]}:\mathcal{Z}^{n}\to \prod_{i=1}^{k}\mathcal{M}_i$ be such that
+$$A_{[k]}=(A_{1},\dots, A_k),$$
+then
+$A_{k}$ is $\left(\sum_{i=1}^{k}\varepsilon_i,\sum_{i=1}^{k}\delta_i\right)$-DP.
+\end{thm}
+
+A common privacy mechanism satisfying $(\varepsilon,\delta)$-DP is the Gaussian mechanism, which consists in adding some Gaussian noise to the output. It generalization from Euclidean spaces to Riemannian manifolds can be studied in \cite{han2024differentially}. The key idea is to define a Gaussian distribution intrinsically w.r.t. the Riemannian metric and add this Gaussian noise in the tangent space. 
+\begin{defn}[Tangent space Gaussian distribution]
+A tangent vector $\xi\in T_{x}\M$ at some point $x\in \M$ follows the tangent space Gaussian distribution with mean $\mu\in T_x\M$ and standard deviation $\sigma>0$ at point $x$, denoted by $\xi\sim\mathcal{N}_{x}(\mu,\sigma^2)$, if its density is given by
+$$p_x(\xi)=C_{x,\sigma}^{-1}\exp\left(-\frac{\|\xi-\mu\|_{x}^{2}}{2\sigma^2}\right),$$
+where $C_{x,\sigma}$ is the normalizing constant.
+\end{defn}
+Notice that vectorizing the tangent vector $\xi$ in $\vec{\xi}=\text{vec}(\xi)$ and mean $\bar{\mu}=\text{vec}{\mu}$ provides a density which can be rewritten as
+$$p_{x}(\xi)=C_{x,\sigma}^{-1}\exp\left(-\frac{1}{2\sigma^2}(\vec{xi}-\vec{\mu})^{T}G_x(\vec{\xi}-\vec{\mu})\right)$$
+where $G_x$ is the SPD metric tensor at $x$. Thus, such definition is equivalent to considering $\vec{\xi}\sim\mathcal{N}(\vec{\mu},\sigma^{2}G_x^{-1})$. 
+Given a query $H:\mathcal{Z}^{n}\to T_x\M$, an associated relevant Gaussian mechanism is given by
+$$\mathcal{H}(D)=H(D)+\xi,\quad \xi \sim\mathcal{N}_x(0,\sigma^2),$$
+for $\sigma\ge \frac{K}{\varepsilon^2}$ for some constant $K$ depending on the global sensitivity of $H$ w.r.t. the Riemannian metric (the explicit bound is provided in Proposition 2. of \cite{han2024differentially}). In particular, a small value of $\varepsilon$ is linked to strong privacy protection. 
+
+
+
+\subsection{Algorithm}
+
+We consider an FL system with one central server and $N$ clients collaborating to fit a model of interest on a Riemannian manifold $\M$. Let $D=\{z_1,\dots, z_n\}\in \mathcal{Z}^{n}$ be a dataset.
+Each client $i$ is in possession of a local dataset $D_i$ of size $N_i=|D_i$, denoted by
+$$D_i=\{z_{i,1},z_{i,2},\dots, z_{i,N_i}\}.$$
+The goal the this FL system is to learn collaboratively $x\in \M$ that minimizes on $\M$ the function
+$$f(x)=\sum_{i=1}^{N}p_i\underbrace{f(x,D_i)}_{=:f_i(x)}=\sum_{i=1}^{N}p_i\left(\frac{1}{N_i}\sum_{j=1}^{N_i}\underbrace{f(x,z_{i,j})}_{=:f_{ij}(x)}\right),$$
+with $\displaystyle p_i=\frac{N_i}{\sum_{i=1}^{N}N_i}$.
+
+The algorithm follows the key steps of RFedSVRG but uses a Private local update. Two privately local training procedures are presented:
+\begin{itemize}
+\item DP-RSGD (\cite{han2024differentially}), which is an adaptation of DP-SGD on Riemannian manifold.
+\item DP-RSVRG (\cite{utpala2022improved}), which is an adaptation of DF-SVRG on Riemannian manifold.
+\end{itemize}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage 
+\bibliographystyle{plain}
+
+\bibliography{biblio}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\section{Second-order optimization}
+Instead of computing Taylor expansion at the first order, one might want to go until the second-order term. Recall that $c: \R \to \M$ is a smooth curve and $f:\M \to \R$ is a smooth real-valued function on the manifold. Setting $g=f\circ c :\R \to \R$, we have
+$$g(t)=g(0)+tg^{\prime}(0)+\frac{t^2}{2}g^{\prime \prime}(0)+O(t^2)$$
+How to define an equivalent of the Hessian on a Riemannian manifold? In the Euclidean setting, the Hessian is the derivative of the gradient vector field. The standard differential of smooth functions on manifolds is not satisfactory, since the result does not in general belong to the same tangent space. It is the reason why we need to redefine a notion of derivative for vector fields named \emph{connection}. With a particular choice of connection (the \emph{Riemannian connection} or \emph{Levi--Civita connection}, we will eventually give meaning to
+$$f(c(t))=f(x)+t\langle \grad f(x),v\rangle_x+\frac{t^2}{2}\langle \text{Hess} f(x)[v],v\rangle_x +\frac{t^2}{2}\langle \grad f(x),c^{\prime \prime}(0)\rangle_x+O(t^3).$$
+Specifically, we want the Riemannian Hessian to be symmetric as a linear map from $T_x\M$ to $T_x\M$.
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Federated Learning}
+
+
 \section{Framework}
 We want to minimize the objective function
 \begin{equation}\label{eq.FL}
@@ -2202,70 +2390,3 @@ To do so,
 \item second, we prove that all client iterates remain close to the global shadow sequence, i.e. in expectation, $\|x_i^{(t,k)}-\bar{x}^{(t,k)}\|^2$ is bounded;
 \item we finally use telescoping over $t$ to show that over $T$ rounds, significant progress towards the optimal value has been made.
 \end{enumerate}
-
-
-%%%%%%%%%%%%%%%%%%%%%
-\chapter{Federated learning on Riemannian manifolds}
-\section{Introduction}
-We consider the following minimization problem over a RIemannian manifold $\M$:
-$$\text{Find}\quad \arg \min_{x\in \M}f(x)\quad\text{with}~f(x)=\frac{1}{n}\sum_{i=1}^{n}f_i(x)$$
-where
-$f_i:\M\to\R$ a smooth function stored in different clients. 
-\begin{exm}
-Federated kPCA problem considers minimizing 
-$$f(X)=\frac{1}{n}\sum_{i=1}^{n}f_i(X)~\text{where}f_i(X)=-\frac{1}{2}\text{Tr}(X^TA_iX)$$
-over the Stiefel manifold $\Stif(d,r)$, where $A_i$ is the covariance matrix of the data stored by the $i$-th client. Notice that $r=1$ comes down the classical PCA.
-\end{exm}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newpage 
-\bibliographystyle{plain}
-
-\bibliography{biblio}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-\end{document}
-
-
-
-
-\section{Second-order optimization}
-Instead of computing Taylor expansion at the first order, one might want to go until the second-order term. Recall that $c: \R \to \M$ is a smooth curve and $f:\M \to \R$ is a smooth real-valued function on the manifold. Setting $g=f\circ c :\R \to \R$, we have
-$$g(t)=g(0)+tg^{\prime}(0)+\frac{t^2}{2}g^{\prime \prime}(0)+O(t^2)$$
-How to define an equivalent of the Hessian on a Riemannian manifold? In the Euclidean setting, the Hessian is the derivative of the gradient vector field. The standard differential of smooth functions on manifolds is not satisfactory, since the result does not in general belong to the same tangent space. It is the reason why we need to redefine a notion of derivative for vector fields named \emph{connection}. With a particular choice of connection (the \emph{Riemannian connection} or \emph{Levi--Civita connection}, we will eventually give meaning to
-$$f(c(t))=f(x)+t\langle \grad f(x),v\rangle_x+\frac{t^2}{2}\langle \text{Hess} f(x)[v],v\rangle_x +\frac{t^2}{2}\langle \grad f(x),c^{\prime \prime}(0)\rangle_x+O(t^3).$$
-Specifically, we want the Riemannian Hessian to be symmetric as a linear map from $T_x\M$ to $T_x\M$.
