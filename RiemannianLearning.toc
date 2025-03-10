@@ -9,12 +9,12 @@
 \contentsline {section}{\numberline {2.2}Riemannian manifolds}{11}{}%
 \contentsline {subsection}{\numberline {2.2.1}Riemannian metric}{11}{}%
 \contentsline {subsection}{\numberline {2.2.2}Riemannian gradients}{12}{}%
-\contentsline {subsection}{\numberline {2.2.3}Riemannian connection}{13}{}%
+\contentsline {subsection}{\numberline {2.2.3}Riemannian connection}{14}{}%
 \contentsline {subsection}{\numberline {2.2.4}Riemannian Hessian}{16}{}%
-\contentsline {subsection}{\numberline {2.2.5}Covariant derivative}{16}{}%
+\contentsline {subsection}{\numberline {2.2.5}Covariant derivative}{17}{}%
 \contentsline {subsection}{\numberline {2.2.6}Geodesics}{18}{}%
-\contentsline {subsection}{\numberline {2.2.7}Riemannian distance}{19}{}%
-\contentsline {subsection}{\numberline {2.2.8}Exponential and logarithmic map}{20}{}%
+\contentsline {subsection}{\numberline {2.2.7}Riemannian distance}{20}{}%
+\contentsline {subsection}{\numberline {2.2.8}Exponential and logarithmic map}{21}{}%
 \contentsline {subsection}{\numberline {2.2.9}Parallel transport}{23}{}%
 \contentsline {chapter}{\numberline {3}Optimization algorithms}{27}{}%
 \contentsline {section}{\numberline {3.1}First-order optimization}{27}{}%
@@ -68,4 +68,6 @@
 \contentsline {subsection}{\numberline {7.2.2}RFedSVRG}{69}{}%
 \contentsline {section}{\numberline {7.3}Riemannian FL algorithm with differential privacy}{70}{}%
 \contentsline {subsection}{\numberline {7.3.1}Differential privacy}{70}{}%
-\contentsline {subsection}{\numberline {7.3.2}Algorithm}{71}{}%
+\contentsline {subsection}{\numberline {7.3.2}Tangent space Gaussian noise}{71}{}%
+\contentsline {paragraph}{How to add tangent Gaussian noise ?}{72}{}%
+\contentsline {subsection}{\numberline {7.3.3}PriFed algorithm}{73}{}%

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.10.14)  7 MAR 2025 16:33
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.10.14)  10 MAR 2025 17:07
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -639,7 +639,7 @@ Chapter 2.
 
 ] [8{/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.e
 nc}] [9] [10] [11] [12] [13] [14] [15] [16] [17] [18] [19] [20]
-Overfull \hbox (21.39053pt too wide) in paragraph at lines 625--627
+Overfull \hbox (21.39053pt too wide) in paragraph at lines 642--644
 \OT1/cmr/m/n/10 Moreover, $[]([](\OMS/cmsy/m/n/10 ^^A\OT1/cmr/m/n/10 ))$ is con
 -stant on $[](\OML/cmm/m/it/10 n\OT1/cmr/m/n/10 )$ since $[](\OML/cmm/m/it/10 n
 \OT1/cmr/m/n/10 )$ is star-shaped and $[]([](0) =
@@ -650,14 +650,14 @@ Overfull \hbox (21.39053pt too wide) in paragraph at lines 625--627
 ]
 Chapter 3.
 [27] [28] [29] [30] [31] [32] [33]
-Overfull \hbox (8.21935pt too wide) in paragraph at lines 1047--1048
+Overfull \hbox (8.21935pt too wide) in paragraph at lines 1064--1065
 []\OT1/cmr/m/n/10 Should $\OML/cmm/m/it/10 f$ \OT1/cmr/m/n/10 pos-sess a con-ti
 n-u-ous gra-di-ent, Lip-s-chitz con-ti-nu-ity of $\OML/cmm/m/it/10 f$ \OT1/cmr/
 m/n/10 amounts to upper-boundedness
  []
 
 [34] [35] [36]
-Overfull \hbox (0.10962pt too wide) in paragraph at lines 1160--1161
+Overfull \hbox (0.10962pt too wide) in paragraph at lines 1177--1178
 \OT1/cmr/m/n/10 func-tions on $\OML/cmm/m/it/10 S$ \OT1/cmr/m/n/10 and $\OML/cm
 m/m/it/10 g[]; [] ; g[]$ \OT1/cmr/m/n/10 geodesi-cally lin-ear func-tions on $\
 OML/cmm/m/it/10 S$\OT1/cmr/m/n/10 . Let $\OML/cmm/m/it/10 []; [] ; [] \OMS/cm
@@ -669,7 +669,7 @@ Chapter 4.
 [41
 
 ] [42] [43] [44] [45] [46]
-Overfull \hbox (2.6143pt too wide) in paragraph at lines 1503--1504
+Overfull \hbox (2.6143pt too wide) in paragraph at lines 1520--1521
 []\OT1/cmr/m/n/10 Variational cal-cu-lus min-i-miza-tion to $\OML/cmm/m/it/10 L
  \OT1/cmr/m/n/10 = [][] []\OML/cmm/m/it/10 dt$ \OT1/cmr/m/n/10 leads to the fol
 -low-ing geodesic
@@ -682,14 +682,14 @@ Chapter 5.
 ] [52] [53] [54]
 Chapter 6.
 
-Underfull \hbox (badness 10000) in paragraph at lines 1690--1691
+Underfull \hbox (badness 10000) in paragraph at lines 1707--1708
 
  []
 
 [55
 
 ] [56] [57] [58]
-Overfull \hbox (9.64685pt too wide) in paragraph at lines 1841--1845
+Overfull \hbox (9.64685pt too wide) in paragraph at lines 1858--1862
 \OT1/cmr/m/n/10 Recall that the BiMap layer bi-lin-early maps $\OML/cmm/m/it/10
  X[] \OMS/cmsy/m/n/10 2 [][]$ \OT1/cmr/m/n/10 to $\OML/cmm/m/it/10 X[] \OT1/cmr
 /m/n/10 = \OML/cmm/m/it/10 f[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 X[]; W[]\OT1/cm
@@ -698,11 +698,11 @@ r/m/n/10 ) = \OML/cmm/m/it/10 W[]X[]W[]$
 
 [59] [60]
 LaTeX Font Info:    Trying to load font information for U+dsrom on input line 1
-931.
+948.
  (/usr/local/texlive/2024/texmf-dist/tex/latex/doublestroke/Udsrom.fd
 File: Udsrom.fd 1995/08/01 v0.1 Double stroke roman font definitions
 ) [61] [62] [63]
-Overfull \hbox (4.02478pt too wide) in paragraph at lines 2050--2053
+Overfull \hbox (4.02478pt too wide) in paragraph at lines 2067--2070
 []\OT1/cmr/m/n/10 Let us now present the Rie-man-nian batch nor-mal-iza-tion al
 -go-rithm. Con-sider a batch $\OMS/cmsy/m/n/10 f\OML/cmm/m/it/10 P[]\OMS/cmsy/m
 /n/10 g[] 2
@@ -712,9 +712,17 @@ Overfull \hbox (4.02478pt too wide) in paragraph at lines 2050--2053
 
 ]
 Chapter 7.
-[67] [68] [69] [70] [71] [72] (./RiemannianLearning.bbl [73
+[67] [68] [69] [70]
+Overfull \hbox (10.9231pt too wide) in paragraph at lines 2258--2259
+\OT1/cmr/m/n/10 man-i-folds is to con-sider an ex-plicit ba-sis con-struc-tion 
+in $\OML/cmm/m/it/10 T[]\OMS/cmsy/m/n/10 M$\OT1/cmr/m/n/10 . In-deed, let $\OML
+/cmm/m/it/10 B \OT1/cmr/m/n/10 := \OMS/cmsy/m/n/10 f\OML/cmm/m/it/10 ^^L[]; [] 
+; ^^L[]\OMS/cmsy/m/n/10 g ^^Z
+ []
 
-]) [74]
+[71] [72] [73] [74] (./RiemannianLearning.bbl [75
+
+]) [76]
 (./RiemannianLearning.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
@@ -722,13 +730,13 @@ L3 programming layer <2024-02-20>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 15038 strings out of 474116
- 310822 string characters out of 5743681
+ 15040 strings out of 474116
+ 310845 string characters out of 5743681
  1942187 words of memory out of 5000000
- 37112 multiletter control sequences out of 15000+600000
+ 37114 multiletter control sequences out of 15000+600000
  570142 words of font info for 82 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 116i,13n,121p,640b,297s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 116i,13n,121p,640b,342s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb
 ></usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb>
 </usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx7.pfb></
@@ -752,10 +760,10 @@ f-dist/fonts/type1/public/amsfonts/cm/cmti7.pfb></usr/local/texlive/2024/texmf-
 dist/fonts/type1/public/doublestroke/dsrom10.pfb></usr/local/texlive/2024/texmf
 -dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/2024/t
 exmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb>
-Output written on RiemannianLearning.pdf (74 pages, 538637 bytes).
+Output written on RiemannianLearning.pdf (76 pages, 550007 bytes).
 PDF statistics:
- 364 PDF objects out of 1000 (max. 8388607)
- 239 compressed objects within 3 object streams
+ 370 PDF objects out of 1000 (max. 8388607)
+ 243 compressed objects within 3 object streams
  0 named destinations out of 1000 (max. 500000)
  13 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -300,6 +300,23 @@ Let $(\M_1, \langle \cdot,\cdot\rangle^{\M_1})$ and $(\M_2,\langle \cdot,\cdot \
 $$\forall (u_1,u_2),(v_1,v_2)\in T_{(x_1,x_2)}(\M_1\times \M_2),~~\langle (u_1,u_2),(v_1,v_2)\rangle_{(x_1,x_2)}=\langle u_1,v_1\rangle_x^{\M_1}+\langle u_2,v_2\rangle_{x_2}^{\M_2}$$
 and defines a Riemannian metric.
 \end{exm}
+
+For $\M$ being a $d$-dimensionala manifold embedded in a higher-dimension Euclidean space, the tangent space $T_x\M$ at some point $x\in \M$ is a vector space and one has the isomorphism
+$$T_x\M\simeq \R^d.$$
+We defined Riemannian metrics coordinate-free, on each tangent space. For $i=1,\dots, d$, consider a local basis $\partial_i=\frac{\partial}{\partial x_i}$ of $T_x\M$, i.e. a basis in which each tangent vector $v\in T_x\M$ can be written as
+$$v=\sum_{i=1}^{d}v^{i}{\partial_i}_{\mid x},$$
+where $v^{i}$ are the local coordinates in this basis.\\
+Let $u,v \in T_x\M$ with local coordinates $(u^1,\dots,u^{d}$ and $(v^1,\dots, v^d)$. We can write
+\[
+\langle u,v\rangle_x=\sum_{i,j=1}^{d}u^{i}v^{j}g_{ij}(x),
+\]
+with $g_{ij}(x):=\langle {\partial_i}_{\mid x}, {\partial_j}_{\mid x}\rangle_x$. Positive-definiteness of $\langle \cdot, \cdot \rangle_x$ on each $T_x\M$ ensure that $G_x=(g_{ij}(x))$ is symmetric positive definie matrix for each $x$. \\ Smoothness assumption of the Riemannian metric ensures that $x\mapsto g_{ij}(x)$ are smooth function in the local coordinate system. \\
+It comes from this analysis that for vectors $u$ and $v$ in $T_x\M$ with coordinates representations $(u^{1},\dots, u^{d})$ and $(v^{1},\dots,v^{d})$ respectively, we have
+$$\langle u,v\rangle_x=u^{T}G_xv.$$
+The SPD matrix $G_x$ \emph{encodes} the Riemannian metric on the chosen coordinate system.
+
+
+
 \subsection{Riemannian gradients}
 Let us consider a smooth function $f:\M \to \R$. How can we define its gradient?
 
@@ -2034,7 +2051,7 @@ The key idea is to compute the weighted arithmetic average in the tangent space 
 $$G^{(t+1)}=\text{Exp}_{G^{(t)}}\left(\sum_{i=1}^{N}w_i\text{Log}_{G^{(t)}}(P_i)\right).$$
 \end{itemize}
 Convergence is guaranteed as it follows from the fact that $\text{Sym}_{n}^{+}$ has non-positive curvature. 
-
+\textcolor{red}{TO DO: a section about how Karcher flow algorithm works in the pre-requisite chapter.}
 
 \subsection{Riemannian batch normalization algorithm}
 Let us now see how to center and bias a batch of SPD matrice.
@@ -2186,9 +2203,18 @@ Such algorithms are often used in shallow learning (kPCA, low-rank estimation).
 In \cite{huang2024federated}, a general Riemannian FL framework with DP is proposed, which possesses theoretical privacy guarantees and whose convergence can be analyzed in non-convex and convex settings. 
 The main references for differential privacy are \cite{dwork2010boosting,kairouz2015composition}. 
 This section studies how to adapt the previous RFedSVRG to include privacy mechanisms.
-\subsection{Differential privacy}
+\par \medskip
 Let $D=\{z_1,z_2,\dots, z_n\}$ be a dataset, where each datapoint $z_i$ is sampled from an input data space $\mathcal{Z}$, i.e. $D\in \mathcal{Z}^{n}$. 
 
+
+We consider an FL system with one central server and $N$ clients collaborating to fit a model of interest on a Riemannian manifold $\M$. Let $D=\{z_1,\dots, z_n\}\in \mathcal{Z}^{n}$ be a dataset.
+Each client $i$ is in possession of a local dataset $D_i$ of size $N_i=|D_i$, denoted by
+$$D_i=\{z_{i,1},z_{i,2},\dots, z_{i,N_i}\}.$$
+The goal the this FL system is to learn collaboratively $x\in \M$ that minimizes on $\M$ the function
+$$f(x)=\sum_{i=1}^{N}p_i\underbrace{f(x,D_i)}_{=:f_i(x)}=\sum_{i=1}^{N}p_i\left(\frac{1}{N_i}\sum_{j=1}^{N_i}\underbrace{f(x,z_{i,j})}_{=:f_{ij}(x)}\right),\quad \text{with } p_i=\frac{N_i}{\sum_{i=1}^{N}N_i}.$$
+
+
+\subsection{Differential privacy}
 \begin{defn}[Adjacent datasets]
 Two datasets $D$ and $D^{\prime}$ are \emph{adjacent} under record-level privacy if they differ in at most one data record:
 $$D\sim D' \iff |D\oplus D'|\leq 2,$$
@@ -2212,6 +2238,7 @@ then
 $A_{k}$ is $\left(\sum_{i=1}^{k}\varepsilon_i,\sum_{i=1}^{k}\delta_i\right)$-DP.
 \end{thm}
 
+\subsection{Tangent space Gaussian noise}
 A common privacy mechanism satisfying $(\varepsilon,\delta)$-DP is the Gaussian mechanism, which consists in adding some Gaussian noise to the output. It generalization from Euclidean spaces to Riemannian manifolds can be studied in \cite{han2024differentially}. The key idea is to define a Gaussian distribution intrinsically w.r.t. the Riemannian metric and add this Gaussian noise in the tangent space. 
 \begin{defn}[Tangent space Gaussian distribution]
 A tangent vector $\xi\in T_{x}\M$ at some point $x\in \M$ follows the tangent space Gaussian distribution with mean $\mu\in T_x\M$ and standard deviation $\sigma>0$ at point $x$, denoted by $\xi\sim\mathcal{N}_{x}(\mu,\sigma^2)$, if its density is given by
@@ -2225,18 +2252,86 @@ Given a query $H:\mathcal{Z}^{n}\to T_x\M$, an associated relevant Gaussian mech
 $$\mathcal{H}(D)=H(D)+\xi,\quad \xi \sim\mathcal{N}_x(0,\sigma^2),$$
 for $\sigma\ge \frac{K}{\varepsilon^2}$ for some constant $K$ depending on the global sensitivity of $H$ w.r.t. the Riemannian metric (the explicit bound is provided in Proposition 2. of \cite{han2024differentially}). In particular, a small value of $\varepsilon$ is linked to strong privacy protection. 
 
+\paragraph{How to add tangent Gaussian noise ?} See \cite{utpala2022improved}.
+
+\begin{itemize}
+\item A first option (Lemma 1 in \cite{utpala2022improved}), which is computationally expensive in high-dimensional manifolds is to consider an explicit basis construction in $T_x\M$. Indeed, let $B:=\{\beta_1,\dots,\beta_d\}\subset T_x\M$ (assumed of dimension $d$) an orthonormal basis, i.e.
+$$\forall i,j =1,\dots, d,~\langle \beta_i,\beta_j\rangle_{x}=\delta_{ij}.$$
+It can be done explicitly (analytically or using Gram--Schmidt orthogonalization procedure). \\
+ Then we sample coordinates $a\in \R^d$ from standard Euclidean Gaussian $\mathcal{N}(0,\sigma^2\text{I}_d)$. Finally, consider 
+$$\xi:=\sum_{i=1}^{d}a_i\beta_i$$
+which is distributed according to $\mathcal{N}_x(0,\sigma^2)$.
+\item A second option (section 3. of \cite{utpala2022improved})  is to use \emph{isometric transportation} from a base point $\hat{x} \in \M$ at which generating tangent Gaussian noise is trivial, and transport the noise from $\hat{x}$ to any desired point $x$ via
+$$\mathcal{T}_{\hat{x}\to x}:T_{\hat{x}}\M \to T_x\M$$
+which can be parallel transport or any isometric vector transport. Specifically, in order to sample $\xi \in T_x\M$ according to tangent Gaussian noise distribution $\mathcal{N}_x(0,\sigma^2)$:
+\begin{enumerate}
+\item sample (from previous procedure via the choice of an orthonormal basis) $\zeta \in \mathcal{N}_{\hat{x}}(0,\sigma^2)$ in $T_{\hat{x}}\M$;
+\item transport $\xi$ to $T_x\M$ via
+$$\xi=\mathcal{T}_{\hat{x}\to x}(\zeta)\in T_x\M$$
+The isometry property of the chosen transport ensures
+$$\|\xi\|_{x}^{2}=\|L(\zeta)\|^2_{x}=\|\zeta\|^{2}_{x}.$$
+It provides $\xi\sim \mathcal{N}_{x}(0,\sigma^2)$. 
+\end{enumerate}
+\end{itemize}
+\begin{exm}
+Let us consider the SPD manifold endowed with the affine-invariant metric. Let $W$ any SPD matrix. \\The base point is $\bar{W}= I$, at which the AIM reduces to
+$$\langle U,V\rangle_{I}^{AI}=\text{Tr}(UV), \quad U,V \in T_{I}\text{Sym}_d^{+}.$$
+Recall that $T_{I}\text{Sym}_d^{+}\simeq \text{Sym}(d)$.
+\begin{enumerate}
+\item Sample $a\sim \mathcal{N}(0,\sigma^2\text{I}_{d(d+1)/2})$.
+\item Reshape $a$ to $A \in \text{Sym}(n)$.
+\item Compute $U=\mathcal{T}_{I\to W}(C \cdot A)$ where $C-{ij}=\mathds{1}_{i=j}+\frac{1}{\sqrt{2}}\mathds{1}_{i\neq j}$. This final output $U$ is a tangent Gaussian sample on $T_W \text{Sym}_d^{+}$.
+\end{enumerate}
+Here the Hadamard (entry-wise) product account for the fact that $\text{Sym}_d$ has $d(d+1)/2$ independent coordinates. The parallel transport $\mathcal{T}_{I\to W}$ is known for the AI metric:
+$$\mathcal{T}_{I\to W}(Z)=W^{1/2}ZW^{1/2}, \quad Z\in \text{Sym}_d^{+}.$$
+\end{exm}
 
 
-\subsection{Algorithm}
 
-We consider an FL system with one central server and $N$ clients collaborating to fit a model of interest on a Riemannian manifold $\M$. Let $D=\{z_1,\dots, z_n\}\in \mathcal{Z}^{n}$ be a dataset.
-Each client $i$ is in possession of a local dataset $D_i$ of size $N_i=|D_i$, denoted by
-$$D_i=\{z_{i,1},z_{i,2},\dots, z_{i,N_i}\}.$$
-The goal the this FL system is to learn collaboratively $x\in \M$ that minimizes on $\M$ the function
-$$f(x)=\sum_{i=1}^{N}p_i\underbrace{f(x,D_i)}_{=:f_i(x)}=\sum_{i=1}^{N}p_i\left(\frac{1}{N_i}\sum_{j=1}^{N_i}\underbrace{f(x,z_{i,j})}_{=:f_{ij}(x)}\right),$$
-with $\displaystyle p_i=\frac{N_i}{\sum_{i=1}^{N}N_i}$.
+\subsection{PriFed algorithm}
+The PriFed algorithm operates iteratively (i) locally with each client performing \emph{private} local training on their datasets, (ii) on the server level, with a central server aggregating the private local updates received from the clients to update the global model.
+\\ Let us detail the algorithm setup.
+Consider $N$ clients (each with local dataset $D_i$), a number of iterations $T$ and stepsizes $\{\alpha_t\}_{t=0}^{T-1}$. Let $x^{(0)}\in \M$ the initial global parameter. 
+\begin{description}
+\item[$\star$ Iterative process] For $t=0,\dots, T-1$]:
+\begin{enumerate}
+\item Sample a subset $S_t \subset \{1,\dots, N\}$ of clients of size $|S_t|=s_t$. 
+\item Each selected client $i$ receives the current global iterate $x^{(t)}$ from the server and performs
+a \emph{Private local update}: 
+$$\tilde{x}_i^{(t+1)}=\text{PrivateLocalTraining}(x^{(t)},D_i,K,\sigma_i,\alpha_t),$$
+where $K$ is the number of local gradient steps performed and $\sigma_i$ controls the level of the Gaussian noise added for DP.
+\item The server receives all private updates $\tilde{x}_i^{(t+1)}$ and aggregates them into a new global parameter via Karcher flow algorithm:
+$$x^{(t+1)}\leftarrow \text{Exp}_{x^{(t)}}\left(\sum_{i\in S_t}p_i\text{Log}_{x^{(t)}}(\tilde{x}_i^{(t+1)})\right).$$
+\end{enumerate}
+\item[$\star$ Output] One the $T$ iterations are performs, the algorithm returns either the final iterate $x^{(T)}$ or a uniformly random draw from $\{x^{(t)}\}_{t=1}^{T}$.
+\end{description}
+\begin{rmk}
+The Karcher flow (see section 3 and section 6.2 of \cite{huang2024federated}) makes it possible to iteratively compute the Fréchet mean through Riemannian gradient descent, since there is usually no closed-form solution. Specifically, if we want to aggregate the local parameters using Fréchet mean, i.e.
+\begin{equation}
+\label{eq.KF.fed}
+x^{(t+1)}\leftarrow \arg \min_{x\in \M}\phi(x) =\frac{1}{2}\sum_{i \in S_t}p_i \text{dist}^2(x,\tilde{x}_i^{(t+1)}).
+\end{equation}
+Karcher flow algorithm relies Riemannian gradient descent since we have 
+\begin{equation}
+\label{eq.KF.grad}
+\grad \left(\phi(x)\right)=-\sum_{i\in S_t}p_i \text{Log}_{x}(\tilde{x}_i^{(t+1)}),
+\end{equation}
+which leads to the gradient descent procedure outlined above in the description of the PriFed algorithm. 
+\end{rmk}
+\begin{exm}
+Consider $\M=\text{Sym}_{d}^{+}$ the SPE matrix manifold, endowed with the affine-invariant metric:
+$$\langle U,V\rangle_{X}=\text{Tr}(UX^{-1}VX^{-1}),\quad U,V \in T_X\text{Sym}_d^{+}.$$
+Let $D_1:=\{Z_{1,1},\dots, Z_{1,N_1}\},\dots, D_N:=\{Z_{N,1},\dots, Z_{N,N_N}\}$ be $N$ datasets of SPD matrices.  From Equation (\ref{eq.KF.fed}), the Fréchet mean of those SPD matrices (Equation (6.2) of \cite{huang2024federated}) is
+$$\arg\min_{X\in \text{Sym}_{d}^{+}}\phi(X)= \sum_{i=1}^{N}p_i\times \frac{1}{N_i}\sum_{j=1}^{N_i}\left\|\log(X^{-1/2}Z_{i,j}X^{-1/2})\right\|_{F}^{2}$$
+since
+$$f_{i,j}(X)=\left\|\log(X^{-1/2}Z_{i,j}X^{-1/2})\right\|_{F}^{2}~;~f_i(X)=\frac{1}{N}\sum_{j=1}^{N_i}f_{i,j}(X).$$
+The Riemannian gradient (Equation (\ref{eq.KF.grad}) ) associated to $\phi$ is given by
+$$
+\grad \phi(X)=-2\sum_{i=1}^{N}\frac{p_i}{N_i}\sum_{j=1}^{N_i}X^{1/2}\log(X^{-1/2}Z_{i,j}X^{-1/2})X^{1/2}.$$
 
-The algorithm follows the key steps of RFedSVRG but uses a Private local update. Two privately local training procedures are presented:
+\end{exm}
+
+Two privately local training procedures are presented:
 \begin{itemize}
 \item DP-RSGD (\cite{han2024differentially}), which is an adaptation of DP-SGD on Riemannian manifold.
 \item DP-RSVRG (\cite{utpala2022improved}), which is an adaptation of DF-SVRG on Riemannian manifold.
