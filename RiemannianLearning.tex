@@ -2101,6 +2101,25 @@ $$\Pi_{T_G\text{Sym}_d^{+}}(P)=GP_{\text{sym}}G,~~P\in \text{Sym}_d^{+}.$$
 Finally, the descent step with learning rate $\eta>0$ is performed and mapped back on the manifold, i.e. at update iteration $t$, 
 $$G^{(t+1)}\leftarrow \exp_{G^{(t)}}\left(-\eta \Pi_{T_{G^{(t)}}\text{Sym}_d^{+}}(\nabla^{\text{eucl}}L(G^{(t)})\right).$$
 
+%%%%%%%%%%%%%%%%%%%%%
+\chapter{DynamicEarthNet dataset}
+
+DynamicEarthNet (DEN) consists of daily multi-spectral satellite images spanning 75 areas of interest (AOI) between 2018-01-01 and 2019-12-31, over six continents. DEN contains $54,750$ cloud-free satellite images. Each first day of each month, pixel-wise semantic segmentation labels are provided, consisting of $1,800$ labels masks ($24 \times 75$). 
+
+The dataset comes from Planet Labs' Fusion Monitoring product. Each satellite image has four multi-spectral channels: $\text{(R,G,B,NIR)}$ where NIR stands for Near Infrared. \\ The spatial resolution is 3 meters (per pixel) and image-size is $1024\times 1024$ pixels. The two-year period of data produces 730 daily images per AOI hence the dataset has a total number of $75 \times 730=54,750$ images.\\ In order to handle cloud cover, cloudy parts of images are filled by using the closest non-cloudy available observation.
+\paragraph{Semantic labels} The labels represent ground truth annotations. For all AOI, there are provided on the first day of each month and consist of seven different classes representing land use and land cover categories:
+\begin{description}
+\item[Class 0] Impervious surfaces
+\item[Class 1] Agriculture
+\item[Class 2] Forest and other vegetation
+\item[Class 3] Wetlands
+\item[Class 4] Soil
+\item[Class 5] Water
+\item[Class 6] Snow and ice
+\end{description}
+For visualization, each class is associated with a color.\\
+Labelling procedure description: for each AOI, the first image is manually annotated and next months's labels are updated only if perceptible changes are detected. Quality checks are conducted by different annotators to ensure correctness and consistency. The class distribution is imblanced over semantic maps, with Class 2 representing around $45\%$ of the labels, Class 4 around $28\%$ and the rest below $10\%$ each. Note that Class 6 is only limited to two AOI.
+
 
 
 
@@ -2208,7 +2227,7 @@ Let $D=\{z_1,z_2,\dots, z_n\}$ be a dataset, where each datapoint $z_i$ is sampl
 
 
 We consider an FL system with one central server and $N$ clients collaborating to fit a model of interest on a Riemannian manifold $\M$. Let $D=\{z_1,\dots, z_n\}\in \mathcal{Z}^{n}$ be a dataset.
-Each client $i$ is in possession of a local dataset $D_i$ of size $N_i=|D_i$, denoted by
+Each client $i$ is in possession of a local dataset $D_i$ of size $N_i=|D_i|$, denoted by
 $$D_i=\{z_{i,1},z_{i,2},\dots, z_{i,N_i}\}.$$
 The goal the this FL system is to learn collaboratively $x\in \M$ that minimizes on $\M$ the function
 $$f(x)=\sum_{i=1}^{N}p_i\underbrace{f(x,D_i)}_{=:f_i(x)}=\sum_{i=1}^{N}p_i\left(\frac{1}{N_i}\sum_{j=1}^{N_i}\underbrace{f(x,z_{i,j})}_{=:f_{ij}(x)}\right),\quad \text{with } p_i=\frac{N_i}{\sum_{i=1}^{N}N_i}.$$
@@ -2245,8 +2264,8 @@ A tangent vector $\xi\in T_{x}\M$ at some point $x\in \M$ follows the tangent sp
 $$p_x(\xi)=C_{x,\sigma}^{-1}\exp\left(-\frac{\|\xi-\mu\|_{x}^{2}}{2\sigma^2}\right),$$
 where $C_{x,\sigma}$ is the normalizing constant.
 \end{defn}
-Notice that vectorizing the tangent vector $\xi$ in $\vec{\xi}=\text{vec}(\xi)$ and mean $\bar{\mu}=\text{vec}{\mu}$ provides a density which can be rewritten as
-$$p_{x}(\xi)=C_{x,\sigma}^{-1}\exp\left(-\frac{1}{2\sigma^2}(\vec{xi}-\vec{\mu})^{T}G_x(\vec{\xi}-\vec{\mu})\right)$$
+Notice that vectorizing the tangent vector $\xi$ in $\vec{\xi}=\text{vec}(\xi)$ and mean $\vec{\mu}=\text{vec}(\mu)$ provides a density which can be rewritten as
+$$p_{x}(\xi)=C_{x,\sigma}^{-1}\exp\left(-\frac{1}{2\sigma^2}(\vec{\xi}-\vec{\mu})^{T}G_x(\vec{\xi}-\vec{\mu})\right)$$
 where $G_x$ is the SPD metric tensor at $x$. Thus, such definition is equivalent to considering $\vec{\xi}\sim\mathcal{N}(\vec{\mu},\sigma^{2}G_x^{-1})$. 
 Given a query $H:\mathcal{Z}^{n}\to T_x\M$, an associated relevant Gaussian mechanism is given by
 $$\mathcal{H}(D)=H(D)+\xi,\quad \xi \sim\mathcal{N}_x(0,\sigma^2),$$
@@ -2280,7 +2299,7 @@ Recall that $T_{I}\text{Sym}_d^{+}\simeq \text{Sym}(d)$.
 \begin{enumerate}
 \item Sample $a\sim \mathcal{N}(0,\sigma^2\text{I}_{d(d+1)/2})$.
 \item Reshape $a$ to $A \in \text{Sym}(n)$.
-\item Compute $U=\mathcal{T}_{I\to W}(C \cdot A)$ where $C-{ij}=\mathds{1}_{i=j}+\frac{1}{\sqrt{2}}\mathds{1}_{i\neq j}$. This final output $U$ is a tangent Gaussian sample on $T_W \text{Sym}_d^{+}$.
+\item Compute $U=\mathcal{T}_{I\to W}(C \cdot A)$ where $C_{ij}=\mathds{1}_{i=j}+\frac{1}{\sqrt{2}}\mathds{1}_{i\neq j}$. This final output $U$ is a tangent Gaussian sample on $T_W \text{Sym}_d^{+}$.
 \end{enumerate}
 Here the Hadamard (entry-wise) product account for the fact that $\text{Sym}_d$ has $d(d+1)/2$ independent coordinates. The parallel transport $\mathcal{T}_{I\to W}$ is known for the AI metric:
 $$\mathcal{T}_{I\to W}(Z)=W^{1/2}ZW^{1/2}, \quad Z\in \text{Sym}_d^{+}.$$
@@ -2331,11 +2350,70 @@ $$
 
 \end{exm}
 
-Two privately local training procedures are presented:
+Two privately local training procedures are presented to minimize (at client level) the local ERM function:
+$$\frac{1}{N}\sum_{i=1}^{N}f(x,z_i).$$
 \begin{itemize}
-\item DP-RSGD (\cite{han2024differentially}), which is an adaptation of DP-SGD on Riemannian manifold.
-\item DP-RSVRG (\cite{utpala2022improved}), which is an adaptation of DF-SVRG on Riemannian manifold.
+\item \textbf{DP-RSGD} (\cite{han2024differentially}), which is an adaptation of DP-SGD on Riemannian manifold.
+\\
+\begin{description}
+\item[Initialization] $x_0\in \M$, privacy parameters $\varepsilon, \delta$, step-size schedule $\eta_t$, batch size $b$, number of iterations $K$ and Gaussian noise variance $\sigma^2$ such that
+$$\sigma^2=\frac{cT\log(1/\delta)L_0^2}{n^2\varepsilon^2},$$
+where $c$ is a constant depending on the manifold and $L_0$ the Lipschitz constant associated to $\grad f(x,z_i)$. 
+\item[Iterative process] For $t=0,\dots, K-1$:
+\begin{enumerate}
+\item Randomly sample a mini-batch $B_t\subset D$ of $b$ sample from the local dataset $D$.
+\item Compute the stochastic Riemannian gradient
+$$\zeta_t=\frac{1}{b}\sum_{z\in B_t}\grad f(x_t,z)$$
+where $\grad f(x_t,z)\in T_{x_t}\M$.
+\item Inject differential privacy  noise (tangent space Gaussian):
+$$\varepsilon_t \sim \mathcal{N}_{x_t}(0,\sigma^2\text{I})$$
+\item Compute the noisy gradient and update the model on the manifold:
+$$\zeta_t^{\text{DP}}=\zeta_t+\varepsilon_t,$$
+$$x_{t+1}=\text{Exp}_{x_t}(-\eta_t\zeta_t^{\text{DP}}).$$
+\end{enumerate}
+\item[Ouput] $x_{T}$, then sent to the server.
+\end{description}
+
+
+
+
+\item \textbf{DP-RSVRG} (\cite{utpala2022improved}), which is an adaptation of DF-SVRG on Riemannian manifold.
+\\
+Let $S$ be the number of outer-loop epochs and $m$ be the number of inner-loop iterations, within each epoch. Let $x^{(0)} \in \M$ be an initial point.
+\begin{description}
+\item[Outer loop] For $s=0,1,\dots, S-1$:
+\begin{enumerate}
+\item Set $\tilde{x}=x^{(s)}$.
+\item Compute the full Riemannian gradient at $\tilde{x}$:
+$$\tilde{\mu}=\frac{1}{N}\sum_{i=1}^{N}\grad f(\tilde{x},z_i) \in T_{\tilde{x}}\M.$$
+\begin{description}
+\item[Inner loop] For $t=0,1,\dots, m-1$:
+\begin{enumerate}
+\item Uniformly sample an index $i_t\in \{1,\dots, N\}$ and compute the Riemannian gradients for $x_t$ and $\tilde{x}$:
+$$g=\grad f(x_t,z_{i_t})\in T_{x_t}\M~;~\tilde{g}=\grad f(\tilde{x},z_{i_t})\in T_{\tilde{x}}\M.$$
+\item Transport $\tilde{\mu}$ and $\tilde{g}$ from $T_{\tilde{x}}\M$ to $T_{x_t}$ to construct a variance-reduced gradient in $T_{x_t}\M$ via
+$$v_t=g_t+\Gamma_{\tilde{x}\to x_t}(\tilde{g}-\tilde{\mu}).$$
+\item To ensure differential privacy, add tangent Gaussian noise:
+$$v_t^{\text{DP}}=v_t+\varepsilon_t,$$
+where
+$$\varepsilon_t\sim \mathcal{N}(0,\sigma^2\text{Id}) \in T_{x_t}\M.$$
+\item Move $x_t$ in the direction $v_t^{\text{DP}}$ on the manifold:
+$$x_{t+1}=\text{Exp}_{x_t}(-\eta v_t^{\text{DP}}).$$
+\end{enumerate}
+After $m$ iterations, we set $x^{(s+1)}=x_{m}$.
+\end{description}
+\end{enumerate}
+
+\end{description}
 \end{itemize}
+
+
+
+
+
+
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage 
 \bibliographystyle{plain}

@@ -60,14 +60,16 @@
 \contentsline {subsection}{\numberline {6.4.1}Riemannian structure}{63}{}%
 \contentsline {paragraph}{Karcher flow algorithm}{64}{}%
 \contentsline {subsection}{\numberline {6.4.2}Riemannian batch normalization algorithm}{64}{}%
-\contentsline {chapter}{\numberline {7}Federated learning on Riemannian manifolds}{67}{}%
-\contentsline {section}{\numberline {7.1}Introduction}{67}{}%
-\contentsline {paragraph}{FedAVg}{68}{}%
-\contentsline {section}{\numberline {7.2}Riemannian FL models}{68}{}%
-\contentsline {subsection}{\numberline {7.2.1}FedSVRG}{68}{}%
-\contentsline {subsection}{\numberline {7.2.2}RFedSVRG}{69}{}%
-\contentsline {section}{\numberline {7.3}Riemannian FL algorithm with differential privacy}{70}{}%
-\contentsline {subsection}{\numberline {7.3.1}Differential privacy}{70}{}%
-\contentsline {subsection}{\numberline {7.3.2}Tangent space Gaussian noise}{71}{}%
-\contentsline {paragraph}{How to add tangent Gaussian noise ?}{72}{}%
-\contentsline {subsection}{\numberline {7.3.3}PriFed algorithm}{73}{}%
+\contentsline {chapter}{\numberline {7}DynamicEarthNet dataset}{67}{}%
+\contentsline {paragraph}{Semantic labels}{67}{}%
+\contentsline {chapter}{\numberline {8}Federated learning on Riemannian manifolds}{69}{}%
+\contentsline {section}{\numberline {8.1}Introduction}{69}{}%
+\contentsline {paragraph}{FedAVg}{70}{}%
+\contentsline {section}{\numberline {8.2}Riemannian FL models}{70}{}%
+\contentsline {subsection}{\numberline {8.2.1}FedSVRG}{70}{}%
+\contentsline {subsection}{\numberline {8.2.2}RFedSVRG}{71}{}%
+\contentsline {section}{\numberline {8.3}Riemannian FL algorithm with differential privacy}{72}{}%
+\contentsline {subsection}{\numberline {8.3.1}Differential privacy}{72}{}%
+\contentsline {subsection}{\numberline {8.3.2}Tangent space Gaussian noise}{73}{}%
+\contentsline {paragraph}{How to add tangent Gaussian noise ?}{74}{}%
+\contentsline {subsection}{\numberline {8.3.3}PriFed algorithm}{75}{}%
