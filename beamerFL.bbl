@@ -1,0 +1,51 @@
+\newcommand{\etalchar}[1]{$^{#1}$}
+\begin{thebibliography}{HHJM24b}
+
+\bibitem[BLSB25]{bouchard2025beyond}
+Florent Bouchard, Nils Laurent, Salem Said, and Nicolas~Le Bihan.
+\newblock Beyond r-barycenters: an effective averaging method on stiefel and
+  grassmann manifolds.
+\newblock {\em arXiv preprint arXiv:2501.11555}, 2025.
+
+\bibitem[BSB{\etalchar{+}}19]{brooks2019riemannian}
+Daniel Brooks, Olivier Schwander, Fr{\'e}d{\'e}ric Barbaresco, Jean-Yves
+  Schneider, and Matthieu Cord.
+\newblock Riemannian batch normalization for spd neural networks.
+\newblock {\em Advances in Neural Information Processing Systems}, 32, 2019.
+
+\bibitem[HHJM24a]{huang2024federated}
+Zhenwei Huang, Wen Huang, Pratik Jawanpuria, and Bamdev Mishra.
+\newblock Federated learning on riemannian manifolds with differential privacy.
+\newblock {\em arXiv preprint arXiv:2404.10029}, 2024.
+
+\bibitem[HHJM24b]{huang2024riemannian}
+Zhenwei Huang, Wen Huang, Pratik Jawanpuria, and Bamdev Mishra.
+\newblock Riemannian federated learning via averaging gradient stream.
+\newblock {\em arXiv preprint arXiv:2409.07223}, 2024.
+
+\bibitem[HMJG24]{han2024differentially}
+Andi Han, Bamdev Mishra, Pratik Jawanpuria, and Junbin Gao.
+\newblock Differentially private riemannian optimization.
+\newblock {\em Machine Learning}, 113(3):1133--1161, 2024.
+
+\bibitem[HVG17]{huang2017riemannian}
+Zhiwu Huang and Luc Van~Gool.
+\newblock A riemannian network for spd matrix learning.
+\newblock In {\em Proceedings of the AAAI conference on artificial
+  intelligence}, volume~31, 2017.
+
+\bibitem[LM22]{li2022federated}
+Jiaxiang Li and Shiqian Ma.
+\newblock Federated learning on riemannian manifolds.
+\newblock {\em arXiv preprint arXiv:2206.05668}, 2022.
+
+\bibitem[TKW{\etalchar{+}}22]{toker2022dynamicearthnet}
+Aysim Toker, Lukas Kondmann, Mark Weber, Marvin Eisenberger, Andr{\'e}s Camero,
+  Jingliang Hu, Ariadna~Pregel Hoderlein, {\c{C}}a{\u{g}}lar {\c{S}}enaras,
+  Timothy Davis, Daniel Cremers, et~al.
+\newblock Dynamicearthnet: Daily multi-spectral satellite dataset for semantic
+  change segmentation.
+\newblock In {\em Proceedings of the IEEE/CVF Conference on Computer Vision and
+  Pattern Recognition}, pages 21158--21167, 2022.
+
+\end{thebibliography}

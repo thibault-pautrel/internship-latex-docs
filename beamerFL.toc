@@ -1,4 +1,4 @@
-\beamer@sectionintoc {1}{Data Setting}{3}{0}{1}
+\beamer@sectionintoc {1}{Data setting}{3}{0}{1}
 \beamer@sectionintoc {2}{Motivation for Federated Learning}{6}{0}{2}
 \beamer@sectionintoc {3}{Federated Procedure}{11}{0}{3}
 \beamer@subsectionintoc {3}{1}{Riemannian local optimization}{12}{0}{3}
@@ -7,3 +7,4 @@
 \beamer@sectionintoc {4}{Server Aggregation}{16}{0}{4}
 \beamer@subsectionintoc {4}{1}{Riemannian aggregation}{16}{0}{4}
 \beamer@subsectionintoc {4}{2}{Euclidean aggregation}{18}{0}{4}
+\beamer@sectionintoc {5}{Average gradient stream approach}{19}{0}{5}
