@@ -479,17 +479,17 @@ See \cite{huang2024riemannian}.
 
 \begin{frame}{RFedAGS algorithm}
 \begin{description}
-\item[$\star$ Outer loop] For $t=0,\dots, T-1$, server broadcasts $x_t$. \\Each client $k=1,\dots, K$ does $\theta_{0}^{(k)} \leftarrow x_t~;~g_{0}^{(k)}\leftarrow 0$.
+\item[$\star$ Outer loop] For $t=0,\dots, T-1$, server broadcasts $\theta_t$. \\Each client $k=1,\dots, K$ does $\theta_{0}^{(k)} \leftarrow x_t~;~g_{0}^{(k)}\leftarrow 0$.
 \begin{enumerate}
 \item For $s=0,\dots, E_k$: 
 \item[$\bullet$] Sample mini-batch $B_{s}^{(k)}$, compute local gradient
 $$\eta_{s}^{(j)}\leftarrow -\alpha_t^{(k)}\frac{1}{\#B_s^{(k)}}\sum_{s\in B_{s}^{(k)}}\textcolor{red}{\text{clip}_{\tau}}\text{grad}f(\theta_{s}^{(k)})+\textcolor{red}{\varepsilon_{s}^{(k)}}$$
 \item Retraction-based update: $\theta_{s+1}^{(k)}=R_{\theta_{s}^{(k)}}(\eta_{t,s}^{(k)})$
 \item Transport gradient to server's tangent space and accumulate:
-$$g_{s+1}^{(k)}=g_{s}^{(k)}+\mathcal{T}_{ x_{t,s}^{(k)}\to x_t}(\eta_{s}^{(k)}).$$
+$$g_{s+1}^{(k)}=g_{s}^{(k)}+\mathcal{T}_{ \theta_{s}^{(k)}\to x_t}(\eta_{s}^{(k)}).$$
 \end{enumerate}
 \item[$\star$ Aggregation]:
- Each client uploads $g_{E_k}^{(k)}$ and server update: $x_{t+1}\leftarrow R_{x_t}\left(\frac{1}{K}\sum_{k=1}^{K}g_{E_k}^{(k)}\right).$
+ Each client uploads $g_{E_k}^{(k)}$ and server update: $x_{t+1}\leftarrow R_{\theta_t}\left(\frac{1}{K}\sum_{k=1}^{K}g_{E_k}^{(k)}\right).$
 \item[$\star$ Output] $x_T$. \textit{In \textcolor{red}{red}, optional DP-RSGD style.}
 \end{description}
 
