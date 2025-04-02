@@ -256,7 +256,7 @@ $$\mathcal{M}:=\left(\prod_{l=1}^{L} \text{St}(d_{l},d_{l+1})\right) \times \lef
     \item[Local objective functions] For each client $k=1,\dots, K$,
     $$F_k(\Theta):=\frac{1}{n_k}\sum_{i=1}^{n_k}\ell\bigl(f_{\Theta}(x_i^{(k)}),\,y_i^{(k)})\bigr).$$
     \item[Global objective function]
-    $$\arg \min_{\Theta \in \mathcal{M}}F(\Theta):=\sum_{k=1}^{K}\frac{n_k}{n}\,F_k(\Theta).$$
+    $$\arg \min_{\Theta \in \mathcal{M}}F(\Theta):=\sum_{k=1}^{K}p_kF_k(\Theta),\quad p_k=\frac{n_k}{n}.$$
 \end{description}
 \end{frame}
 
@@ -322,12 +322,13 @@ Besides the \textcolor{blue}{variance-reduction} approach, we can also inject
   \[
      g_{\text{DP}}^{(k)} 
      \;=\; 
-     g^{(k)} \;\; \textcolor{dpColor}{+\;\varepsilon_t},
+     \text{\textcolor{forestgreen}{clip}}_{\tau}(g^{(k)}) \;\; \textcolor{dpColor}{+\;\varepsilon_t},
      \quad \text{where} \quad
      \varepsilon_t \;\sim\; \mathcal{N}_{\,\theta_s^{(k)}}\bigl(0,\sigma^2\bigr).
   \]
-  \item This noise is drawn from a \emph{tangent-space Gaussian} distribution 
-    at $\theta_s^{(k)}$.
+$ \mathcal{N}_{\,\theta_s^{(k)}}\bigl(0,\sigma^2\bigr)$ is  \emph{tangent-space Gaussian} distribution 
+    at $\theta_s^{(k)}$ and \text{clip}_{\tau}:T_{\theta}\mathcal{M} \to T_{\theta}\mathcal{M}$ is such that
+    $$\text{clip}_{\tau}(\xi)=\min\left\{\frac{\tau}{\|\xi\|_{\theta}},1\right\}.$$
 \end{itemize}
 
 \textcolor{dpColor}{\textbf{Privacy Guarantee:}}
@@ -337,14 +338,14 @@ With an appropriate choice of $\sigma$ and composition rules, the entire FL pipe
 \begin{frame}{Riemannian local updates with optional DP}
 \begin{itemize} 
 \item Initialize $\theta_0^{(k)}=\theta_{t}$
-\item For $s=1,\dots, E_k$:
+\item For $s=1,\dots, E_k$: over a selected minibatch,
     \[
       g^{(k)} \;=\; \text{grad}\,F_k\!\bigl(\theta_s^{(k)}\bigr)
                 \;\;\textcolor{blue}{-\;\mathcal{T}_{\,\theta_{t}\to \theta_s^{(k)}}
                 \Bigl(\text{grad}\, F_k(\theta_t)\;-\;\text{grad}\, F(\theta_t)\Bigr)},
     \]
     \[
-      \textcolor{dpColor}{g_{\text{DP}}^{(k)} \;=\; g^{(k)} \;+\;\varepsilon_s,
+      \textcolor{dpColor}{g_{\text{DP}}^{(k)} \;=\; \text{clip}_{\tau}(g^{(k)}) \;+\;\varepsilon_s,
       \qquad \varepsilon_s \;\sim\; \mathcal{N}_{\,\theta_s^{(k)}}(0,\sigma^2).}
     \]
     Then update via retraction (or exponential map):
@@ -392,16 +393,16 @@ where:
 \begin{frame}{Server aggregation (Karcher flow) for $\theta=G$ SPD}
 After each client $k \in \mathcal{S}_r$ sends back $\theta_{E_k}^{(k)}$, we compute the Riemannian (Fréchet) mean on the manifold:
 \[
-  \Theta_{t+1} \;=\; 
-    \arg\min_{\Theta\in\mathcal{M}} \;\sum_{k\in \mathcal{S}_r} p_k\,d\bigl(\Theta,\;\theta_{E_k}^{(k)}\bigr)^2.
+  \theta_{t+1} \;=\; 
+    \arg\min_{\theta\in\mathcal{M}} \;\sum_{k\in \mathcal{S}_r} p_k\,d\bigl(\theta,\;\theta_{E_k}^{(k)}\bigr)^2.
 \]
 \begin{itemize}
 \item In practice, we use a gradient-descent-based procedure (Karcher flow):
 \[
-   \Theta_{t+1} 
+   \theta_{t+1} 
    \;\leftarrow\; 
-   \mathrm{Exp}_{\Theta_{t}}\!\Bigl(\,-\,\gamma\sum_{k\in \mathcal{S}_r} 
-   p_k\,\mathrm{Log}_{\Theta_{t}}(\theta_{E_k}^{(k)})\Bigr),
+   \mathrm{Exp}_{\theta_{t}}\!\Bigl(\,-\,\gamma\sum_{k\in \mathcal{S}_r} 
+   p_k\,\mathrm{Log}_{\theta_{t}}(\theta_{E_k}^{(k)})\Bigr),
 \]
 where $\gamma$ is a step size for the Karcher flow.
 \end{itemize}
@@ -412,7 +413,7 @@ where $\gamma$ is a step size for the Karcher flow.
 
 
 
-\begin{frame}{Server aggregation (projection-based) or \(\mathbf{W}\in \mathrm{St}(d_l,d_{l+1})\)}
+\begin{frame}{Server aggregation (projection-based) on \(\mathbf{W}\in \mathrm{St}(d_l,d_{l+1})\)}
 See \cite{bouchard2025beyond}. \\For the BiMap parameters \(W_l\) living on the Stiefel manifold, we can use:
 
 \begin{itemize}
@@ -478,18 +479,18 @@ See \cite{huang2024riemannian}.
 
 \begin{frame}{RFedAGS algorithm}
 \begin{description}
-\item[$\star$ Outer loop] For $t=0,\dots, T-1$, server broadcasts $x_t$. \\Each client $k=1,\dots, K$ does $x_{t,0}^{(k)} \leftarrow x_t~;~\zeta_{t,0}^{(k)}\leftarrow 0$.
+\item[$\star$ Outer loop] For $t=0,\dots, T-1$, server broadcasts $x_t$. \\Each client $k=1,\dots, K$ does $\theta_{0}^{(k)} \leftarrow x_t~;~g_{0}^{(k)}\leftarrow 0$.
 \begin{enumerate}
 \item For $s=0,\dots, E_k$: 
-\item Sample mini-batch $B_{t,s}^{(k)}$, compute local gradient
-$$\eta_{t,s}^{(j)}\leftarrow -\alpha_t^{(k)}\frac{1}{B_t^{(k)}}\sum_{s\in B_{t,s}^{(k)}}\text{grad}f(x_{t,s}^{(k)}$$
-\item Retraction-based update: $x_{t,s+1}^{(k)}=R_{x_{t,s}^{(k)}}(\eta_{t,s}^{(k)})$
+\item[$\bullet$] Sample mini-batch $B_{s}^{(k)}$, compute local gradient
+$$\eta_{s}^{(j)}\leftarrow -\alpha_t^{(k)}\frac{1}{\#B_s^{(k)}}\sum_{s\in B_{s}^{(k)}}\textcolor{red}{\text{clip}_{\tau}}\text{grad}f(\theta_{s}^{(k)})+\textcolor{red}{\varepsilon_{s}^{(k)}}$$
+\item Retraction-based update: $\theta_{s+1}^{(k)}=R_{\theta_{s}^{(k)}}(\eta_{t,s}^{(k)})$
 \item Transport gradient to server's tangent space and accumulate:
-$$\zeta_{t,s+1}^{(k)}=\zeta_{t,s}^{(k)}+\mathcal{T}_{ x_{t,s}^{(k)}\to x_t}(\eta_{t,s}^{(k)}).$$
+$$g_{s+1}^{(k)}=g_{s}^{(k)}+\mathcal{T}_{ x_{t,s}^{(k)}\to x_t}(\eta_{s}^{(k)}).$$
 \end{enumerate}
 \item[$\star$ Aggregation]:
- Each client uploads $\zeta_{t,E_k}^{(k)}$ and server update: $x_{t+1}\leftarrow R_{x_t}\left(\frac{1}{K}\sum_{k=1}^{K}\zeta_{t,E_k}^{(k)}\right).$
-\item[$\star$ Output] $x_T$.
+ Each client uploads $g_{E_k}^{(k)}$ and server update: $x_{t+1}\leftarrow R_{x_t}\left(\frac{1}{K}\sum_{k=1}^{K}g_{E_k}^{(k)}\right).$
+\item[$\star$ Output] $x_T$. \textit{In \textcolor{red}{red}, optional DP-RSGD style.}
 \end{description}
 
 \end{frame}

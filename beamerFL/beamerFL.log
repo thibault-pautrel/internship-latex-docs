@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.10.14)  26 MAR 2025 23:00
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.10.14)  1 APR 2025 14:50
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1131,7 +1131,15 @@ LaTeX Font Info:    Font shape `OT1/cmss/b/n' in size <14.4> not available
 
  [12
 
-] [13
+]
+./beamerFL.tex:336: Missing $ inserted.
+<inserted text> 
+                $
+l.336 \end{frame}
+                 
+? s
+OK, entering \scrollmode...
+[13
 
 ] [14
 
@@ -1148,7 +1156,7 @@ LaTeX Font Info:    Font shape `OT1/cmss/b/n' in size <14.4> not available
 ] [20
 
 ] (./beamerFL.bbl)
-Overfull \vbox (12.6678pt too high) detected at line 502
+Overfull \vbox (12.6678pt too high) detected at line 503
  []
 
 [21
@@ -1200,7 +1208,7 @@ ve/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmss8.pfb></usr/local/texlive
 24/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2024
 /texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb></usr/local/texlive/
 2024/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on beamerFL.pdf (21 pages, 1563717 bytes).
+Output written on beamerFL.pdf (21 pages, 1565647 bytes).
 PDF statistics:
  763 PDF objects out of 1000 (max. 8388607)
  674 compressed objects within 7 object streams
